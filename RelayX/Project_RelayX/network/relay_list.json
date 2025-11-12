@@ -1,0 +1,38 @@
+{
+  "relays": [
+    {
+      "id": "RelayX-01",
+      "name": "RelayX 1",
+      "onion": "kfv2qjcquyeksbrqgxhd5oj2nq3vtjxjy7xz6suxlx3vtcjjmrghnzqd.onion",
+      "port": 5050,
+      "region": "In",
+      "status": "active",
+      "pub_hash": "bdf67a892a17f4e5b9f271a53e72a1895e47e2d124debc7b84e9c7b94751a3c3"
+    },
+    {
+      "id": "relay-02",
+      "name": "RelayXBeta",
+      "ip": "127.0.0.1",
+      "port": 6061,
+      "region": "local",
+      "status": "offline",
+      "pub_hash": "f5c17e0e32f3a8a56b96e5ed12481f10dfdf8c87e24c7a8b07e8dc6a40a9badd"
+    },
+    {
+      "id": "relay-03",
+      "name": "RelayX Gamma",
+      "ip": "127.0.0.1",
+      "port": 6062,
+      "region": "local",
+      "status": "offline",
+      "pub_hash": "e172c61c8f4d35c41c3a39d5e3c5d8d8a10ff9e985f3b96a4ec2f1e2c72a1cb3"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "description": "List of available Relays in RelayX network for Project RelayX",
+    "last_updated": "2025-10-31T00:00:00Z",
+    "maintainer": "Project RelayX.", 
+    "Devs involved" : "Poojit Matukumalli (GitHub- Poojit-Matukumalli)"
+  }
+}
