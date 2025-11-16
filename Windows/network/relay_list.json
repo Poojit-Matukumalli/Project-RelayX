@@ -10,13 +10,14 @@
       "pub_hash": "bdf67a892a17f4e5b9f271a53e72a1895e47e2d124debc7b84e9c7b94751a3c3"
     },
     {
-      "id": "relay-02",
-      "name": "RelayXBeta",
+      "id": "RelayX-02",
+      "name": "RelayX Beta",
+      "onion": "bn2zkklvomvl3xub37cyqe4izh3mktq5yfsvpyuaxncc2jeqt4cgnfqd.onion",
       "ip": "127.0.0.1",
-      "port": 6061,
-      "region": "local",
-      "status": "offline",
-      "pub_hash": "f5c17e0e32f3a8a56b96e5ed12481f10dfdf8c87e24c7a8b07e8dc6a40a9badd"
+      "port": 5050,
+      "region": "In",
+      "status": "active",
+      "pub_hash": "a3c5d6e7f8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"
     },
     {
       "id": "relay-03",

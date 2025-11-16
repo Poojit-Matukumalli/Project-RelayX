@@ -14,14 +14,6 @@ HKDF_INFO = b"RelayX-shield-v1"  # context string for domain separation
 
 def derive_shield_key(chat_key: str, salt: Optional[bytes] = None) -> bytes:
     # TODO, Add salt (optional) to HKDF for session uniqueness
-    """
-    Deterministically derive a 32-byte key suitable for AES-GCM from the
-    chat_key (string). Both sides must call this with the exact same chat_key
-    to derive the same shield key.
-
-    Optional salt may be provided; if you want cross-session uniqueness,
-    you can supply a persistent salt (but default None is fine).
-    """
     ikm = chat_key.encode()  # input key material
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
@@ -31,29 +23,26 @@ def derive_shield_key(chat_key: str, salt: Optional[bytes] = None) -> bytes:
     )
     return hkdf.derive(ikm)
 
+# DO NOT CHANGE ASSOCIATED DATA UNLESS ALL YOUR CONTACTS DO THE SAME.
+# CHANGING IT WILL CAUSE DECRYPTION KILLING ITSELF LIKE MY SANITY.
 
-def shield_encrypt(key: bytes, plaintext: str) -> str:
-    """
-    Encrypts the plaintext using AES-GCM.
-    Returns a urlsafe-base64 string of (nonce || ciphertext_with_tag).
-    """
+def shield_encrypt(key: bytes, plaintext: str, associated_data: Optional[bytes] = b"RelayX") -> str: 
+    # Encrypts the plaintext using AES-GCM and returns urlsafe-base64 str
     try:
         aesgcm = AESGCM(key)
         nonce = os.urandom(AESGCM_NONCE_SIZE)
-        ciphertext = aesgcm.encrypt(nonce, plaintext.encode(), associated_data=None)
+        ad_bytes = associated_data if associated_data else None
+        ciphertext = aesgcm.encrypt(nonce, plaintext.encode(), associated_data=ad_bytes)
         payload = nonce + ciphertext
         return base64.urlsafe_b64encode(payload).decode()
     except Exception as e:
         # Keep error message vague as hell so logs don't leak secrets
-        print(f"[SHIELD ENCRYPT ERROR] {e}")
+        print(f"[SHIELD ENCRYPT ERROR]")
         return ""
 
 
-def shield_decrypt(key: bytes, encoded: str) -> str:
-    """
-    Decode the urlsafe-base64 payload (nonce || ciphertext) and decrypt.
-    Returns plaintext, type : str, or an empty string on failure.
-    """
+def shield_decrypt(key: bytes, encoded: str, associated_data: Optional[bytes] = b"RelayX") -> str: 
+    # Decrypts the urlsafe-base64 (nonce || ciphertext). On failure, this thing returns empty string.
     try:
         payload = base64.urlsafe_b64decode(encoded)
         if len(payload) < AESGCM_NONCE_SIZE + 16:  # 16 is minimum tag size
@@ -61,8 +50,9 @@ def shield_decrypt(key: bytes, encoded: str) -> str:
         nonce = payload[:AESGCM_NONCE_SIZE]
         ciphertext = payload[AESGCM_NONCE_SIZE:]
         aesgcm = AESGCM(key)
-        plaintext = aesgcm.decrypt(nonce, ciphertext, associated_data=None)
+        ad_bytes = associated_data if associated_data else None
+        plaintext = aesgcm.decrypt(nonce, ciphertext, associated_data=ad_bytes)
         return plaintext.decode()
     except Exception as e:
-        print(f"[SHIELD DECRYPT ERROR] {e}")
+        print(f"[SHIELD DECRYPT ERROR]")
         return ""
