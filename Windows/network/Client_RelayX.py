@@ -16,11 +16,12 @@ if ROOT_DIR not in sys.path:
 
 from encryptdecrypt.encrypt_message import encrypt_message
 from encryptdecrypt.decrypt_message import decrypt_message
-from Keys.chat_key.derive_chat_key import derive_chat_key
+from Keys.public_key_private_key.generate_keys import handshake_responder
 
-chat_key = derive_chat_key("", "")
-
-
+addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
+with open(addr_file, "r") as f:
+    addr_user_onion = f.read()
+user_onion = addr_user_onion
 # Helper
 def load_active_relays():       # Loads active relays... Duh
     relay_file = os.path.join("Windows", "network", "relay_list.json")
@@ -41,11 +42,11 @@ def load_active_relays():       # Loads active relays... Duh
 
 
 # Helper
-def encrypt_payload(msg: str) -> str:
-    return encrypt_message(msg, chat_key)              # TODO : GOTO encrypt_message
+def encrypt_payload(msg: str, chat_key: bytes) -> str:
+    return encrypt_message(chat_key, msg)              # TODO : GOTO encrypt_message
 
 # Helper
-def decrypt_payload(msg: str) -> str:
+def decrypt_payload(msg: str, chat_key: bytes) -> str:
     return decrypt_message(msg, chat_key)              # TODO : GOTO decrypt_message
 sys_rand = random.SystemRandom()
 
@@ -88,7 +89,7 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
 
 # Accessed in the executor script
 # sending logic
-async def relay_send(message,user_onion, recipient_onion, show_route=True):
+async def relay_send(message ,user_onion, recipient_onion, show_route=True):
     try:
         active_relays = load_active_relays()
         if not active_relays:
@@ -104,11 +105,11 @@ async def relay_send(message,user_onion, recipient_onion, show_route=True):
 
         envelope = {
             "route": route.copy(),
-            "payload": encrypt_payload(message),
+            "payload": message,
             "from": user_onion,
             "to": recipient_onion,
             "stap": time.time(),
-            "meta": {"type": "msg"}
+            "type": "msg"
         }
 
         # Pop the user address to avoid looping
@@ -127,12 +128,24 @@ async def relay_send(message,user_onion, recipient_onion, show_route=True):
 
 # Helper
 # the listener 
+async def handle_handshake_key(reader, writer):
+    try:
+        data = await reader.read(8192)
+        envelope = json.loads(data.decode())
+        session_key = await handshake_responder(envelope, user_onion, send_via_tor)
+        return session_key
+    except Exception as e:
+        print(f"[ERR] Handshake handler crashed: {e}")
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
 async def handle_incoming(reader, writer):
     try:
         data = await reader.read(8192)
         msg_raw = data.decode()
         try:
-            envelope = json.loads(msg_raw)
+            envelope = json.loads(msg_raw)          
             decrypted = decrypt_payload(envelope.get("payload", ""))
             print(f"\n[INCOMING MESSAGE]\nFrom: {envelope.get('from')}\nMsg: {decrypted}\n")
         except Exception:

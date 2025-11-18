@@ -2,8 +2,21 @@ import hashlib
 import base64
 import time
 import threading
-import socket
+import sys, os
 
+# Import fix
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from network.Client_RelayX import send_via_tor
+from Keys.public_key_private_key.generate_keys import handshake_initiator
+from Keys.chat_key.derive_chat_key import derive_chat_key
+
+addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
+with open(addr_file, "r") as f:
+    addr_user_onion = f.read()
+user_onion = addr_user_onion
 # Global state
 CHAT_KEY = None
 MESSAGE_COUNTER = 0
@@ -12,20 +25,11 @@ LAST_ROTATE_TIME = time.time()
 ROTATE_INTERVAL = 600           
 ROTATE_AFTER_MESSAGES = 25
 
-def derive_chat_key(priv_key, peer_pub_key):
-    """
-    Deterministically derive symmetric chat key based on both peer IDs.
-    """
-    combo = '|'.join(sorted([priv_key, peer_pub_key]))
-    shared_secret = hashlib.sha256(combo.encode()).digest()
-    fernet_key = base64.urlsafe_b64encode(shared_secret).decode()
-    return fernet_key
 
-
-def rotate_chat_key(priv_key, peer_pub_key, peer_ip=None, peer_port=None):
+def rotate_chat_key(peer_onion):
     global CHAT_KEY, MESSAGE_COUNTER, LAST_ROTATE_TIME
-
-    combo = f"{priv_key}|{peer_pub_key}|{time.time()}"
+    element = derive_chat_key()
+    combo = f"{element}|{time.time()}"
     new_secret = hashlib.sha256(combo.encode()).digest()
     CHAT_KEY = base64.urlsafe_b64encode(new_secret).decode()
 
@@ -38,16 +42,11 @@ def rotate_chat_key(priv_key, peer_pub_key, peer_ip=None, peer_port=None):
     print(f"[ROTATED AT] {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print("------------------------------------------\n")
     
-    if peer_ip and peer_port:
+    if peer_onion:
         try:
-            msg = f"KEYUPDATE:{CHAT_KEY}"
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((peer_ip, int(peer_port)))
-            s.send(msg.encode())
-            s.close()
-            print(f"[KEY SYNC] Sent KEYUPDATE to {peer_ip}:{peer_port}")
+            handshake_initiator(user_onion=user_onion, peer_onion=peer_onion, send_via_tor=send_via_tor)
         except Exception as e:
-            print(f"[KEY SYNC ERROR] Could not send KEYUPDATE: {e}")
+            print(f"[KEY ROTATION ERROR] Failed to perform handshake after rotation: {e}")
 
     return CHAT_KEY
 

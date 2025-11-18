@@ -14,21 +14,24 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from Client_RelayX import relay_send
+from network.Client_RelayX import relay_send, send_via_tor
+from encryptdecrypt.shield_crypto import derive_shield_key
+from encryptdecrypt.encrypt_message import encrypt_message
+from Keys.public_key_private_key.generate_keys import make_init_message, make_resp_message
 
-
-Chat_Key = None
+user_onion = os.path.join("Windows","network","Networking","data","HiddenService","hostname")
 PEER_PUB_KEY = None
 USERNAME = json.load(open(os.path.join("Windows","network","details.json"), "r"))["Username"]
 
-async def start_client(user_onion, recipient_onion):
+async def start_client(user_onion, recipient_onion,session_key):
     print(f"[CLIENT READY] Type messages to send. '/exit' to quit.")
+    shield_key = derive_shield_key(session_key)
     try:
         while True:
             msg = input("You: ")
             if msg.lower() == "/exit":
                 break
-            await relay_send(msg, user_onion, recipient_onion,)
+            await relay_send(encrypt_message(session_key, msg), user_onion, recipient_onion)
     except Exception as e:
         print(f"[CLIENT ERROR] {e}")
 

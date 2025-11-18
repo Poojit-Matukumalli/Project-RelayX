@@ -22,6 +22,7 @@
     {
       "id": "relay-03",
       "name": "RelayX Gamma",
+      "onion": "",
       "ip": "127.0.0.1",
       "port": 6062,
       "region": "local",

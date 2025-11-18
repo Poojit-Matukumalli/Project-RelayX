@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project RelayX - Built for Privacy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom keyframes for the slow spin (GitHub) */
+        @keyframes spin_slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* Apply the custom animation utility */
+        .animate-spin-slow {
+            animation: spin_slow 5s linear infinite;
+        }
+
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #161b22;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #21262d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #30363d;
+        }
+
+        /* --- Custom Glow Keyframes --- */
+        /* Windows Glow (Blue/Indigo) */
+        @keyframes pulse-glow-blue {
+            0%, 100% { box-shadow: 0 0 5px rgba(28, 121, 241, 0.5), 0 0 10px rgba(28, 121, 241, 0.5); }
+            50% { box-shadow: 0 0 15px rgb(28, 121, 241), 0 0 5px #1c79f1; } 
+        }
+
+        /* Android Glow (Green) */
+        @keyframes pulse-glow-green {
+            0%, 100% { box-shadow: 0 0 5px rgba(34, 197, 94, 0.5), 0 0 15px rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 0 15px #22c55e, 0 0 30px #22c55e; }
+        }
+
+        /* Linux Glow (Orange) */
+        @keyframes pulse-glow-orange {
+            0%, 100% { box-shadow: 0 0 5px rgba(249, 115, 22, 0.5), 0 0 15px rgba(249, 115, 22, 0.5); }
+            50% { box-shadow: 0 0 15px #f97316, 0 0 30px #f97316; }
+        }
+        
+        /* Define the hover effects by applying the animation inside the :hover pseudo-class */
+        .glow-blue:hover { animation: pulse-glow-blue 2s infinite alternate; }
+        .glow-green:hover { animation: pulse-glow-green 2s infinite alternate; }
+        .glow-orange:hover { animation: pulse-glow-orange 2s infinite alternate; }
+
+        /* Ensure the button has a subtle shadow even when not glowing to avoid CLS */
+        .glow-blue { box-shadow: 0 0 2px rgba(28, 121, 241, 0.3); }
+        .glow-green { box-shadow: 0 0 2px rgba(34, 197, 94, 0.3); }
+        .glow-orange { box-shadow: 0 0 2px rgba(249, 115, 22, 0.3); }
+
+    </style>
+    <script>
+        // Configure Tailwind theme for custom colors and the spin animation
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+                extend: {
+                    colors: {
+                        'relay-dark': '#0f172a', /* Deep Blue/Slate */
+                        'relay-primary': '#6366f1', /* Indigo Accent */
+                    },
+                    /* Add the custom animation to the config utilities */
+                    animation: {
+                        'spin-slow': 'spin_slow 5s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-relay-dark min-h-screen flex flex-col antialiased">
+
+    <!-- Hero Bar (Navigation) --><header class="p-4 md:p-6 border-b border-gray-800 shadow-lg">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 class="text-2xl font-bold text-white tracking-wider">
+                Project RelayX
+            </h1>
+            <nav>
+                <a href="#features" class="text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Features</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content / Hero Section --><main class="flex-grow flex items-center justify-center p-6">
+        <div class="text-center max-w-5xl w-full">
+            <div class="flex flex-col items-center md:items-start md:flex-row md:justify-center">
+                
+                <!-- Main Punchline --><div class="flex flex-col items-center md:items-start">
+                    <h2 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight">
+                        Built for Privacy,
+                    </h2>
+                    <h2 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mt-1 md:mt-2">
+                         Funded by You.
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Tagline / Attribution - Centered below the main punchline, slightly right-aligned visually --><div class="w-full mt-6 flex justify-center md:justify-end md:pr-12">
+                <p class="text-xl md:text-2xl font-light text-relay-primary tracking-wide bg-gray-900/50 p-2 rounded-lg inline-block shadow-xl">
+                    - Project RelayX
+                </p>
+            </div>
+
+
+            <!-- Spinning GitHub Redirect Link (Updated to extended rectangle) --><div class="mt-12">
+                <a href="https://github.com/Poojit-Matukumalli/Project-RelayX" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center space-x-4 px-8 py-4 bg-relay-primary hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-2xl transition duration-300 transform hover:scale-105 group"
+                   aria-label="GitHub Repository">
+                    <!-- GitHub Icon (Inline SVG) - Spinning part --><svg class="w-8 h-8 group-hover:animate-spin-slow transition-transform duration-300" 
+                         fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.417 2.865 8.161 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.694-2.782.607-3.374-1.353-3.374-1.353-.455-1.152-1.111-1.458-1.111-1.458-.908-.619.068-.606.068-.606 1.004.072 1.531 1.029 1.531 1.029.892 1.528 2.341 1.087 2.91.831.091-.645.352-1.087.643-1.334-2.228-.253-4.567-1.114-4.567-4.942 0-1.09.39-1.983 1.029-2.681-.103-.254-.447-1.272.098-2.646 0 0 .84-.268 2.75 1.021a9.58 9.58 0 012.55-.347c.85.004 1.7.11 2.55.347 1.91-1.289 2.75-1.021 2.75-1.021.546 1.374.202 2.392.099 2.646.64.698 1.028 1.59 1.028 2.681 0 3.837-2.339 4.686-4.576 4.935.359.307.678.92.678 1.855 0 1.334-.012 2.41-.012 2.73 0 .267.18.58.688.482C19.138 20.177 22 16.433 22 12.017 22 6.484 17.523 2 12 2z" clip-rule="evenodd" />
+                    </svg>
+                    <!-- Text element --><span class="text-lg">View Source Code</span>
+                </a>
+            </div>
+            <p class="text-gray-600 mt-4 text-xs">Project Repository maintained under My GitHub account.</p>
+            
+            <!-- Download Buttons Section (Dynamic Single Button) --><div class="mt-12 border-t border-gray-800 pt-8">
+                <h3 class="text-2xl font-semibold text-white mb-6">Download Project RelayX</h3>
+                <div id="download-buttons" class="flex justify-center">
+                    <!-- Single Dynamic Button will be injected here by JavaScript --></div>
+                <p class="text-gray-600 mt-4 text-xs">Note: Supports Windows, Android, and Linux. macOS is unsupported.</p>
+            </div>
+
+        </div>
+    </main>
+    
+    <!-- Team Section (Updated for Solo Creator) --><section class="py-16 px-6 bg-relay-dark border-t border-gray-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-extrabold text-white mb-12">Project RelayX Creator</h2>
+            
+            <div class="flex justify-center">
+                <!-- Solo Team Member Placeholder with levitate effect --><div class="bg-gray-800 p-6 rounded-xl shadow-lg transition transform hover:border-accent transition duration-300 transform hover:scale-105 team-card-hover">
+                    <div class="mx-auto w-24 h-24 bg-relay-primary flex items-center justify-center rounded-full mb-4 ring-4 ring-gray-700/50">
+                        <span class="text-4xl font-bold text-white">P</span>
+                    </div>
+                    <h4 class="text-xl font-semibold text-white">Placeholder Name</h4>
+                    <p class="text-relay-primary mt-1 mb-3">Founder & Solo Developer</p>
+                    <p class="text-gray-400 text-sm">Focuses on secure encryption protocols, backend infrastructure, and user experience for all platforms.</p>
+                </div>
+            </div>
+
+            <p class="text-gray-500 mt-12 max-w-2xl mx-auto">
+                Project RelayX is a solo effort, dedicated to open-source privacy software. 
+                It is funded entirely by user donations, ensuring priorities always align with your security and privacy needs.
+            </p>
+        </div>
+    </section>
+
+    <!-- About Project RelayX -->
+    <section class="py-16 px-6 bg-relay-dark border-t border-gray-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <h3 class="text-4xl font-extrabold text-white mb-12">About Project RelayX</h3>
+            
+            <!-- Encasing the content in a card-like div for visual consistency --><div class="bg-gray-800 p-8 rounded-xl shadow-lg transition duration-300 border border-gray-700 max-w-4xl mx-auto text-left">
+                <p class="text-gray-400 leading-relaxed text-lg mb-4">
+                    Project RelayX is a radical new approach to secure, private communication, born out of the belief that privacy is a fundamental right, not a feature you should pay for with your data. Unlike corporate messaging platforms that profit from surveillance capitalism, RelayX operates on a fully open-source, non-profit model. Our architecture is meticulously crafted from the ground up to ensure true end-to-end encryption (E2EE) and robust metadata minimization, guaranteeing that your conversations remain confidential.
+                </p>
+                <p class="text-gray-400 leading-relaxed text-lg">
+                    Every line of code is freely auditable by the community, providing unparalleled transparency and establishing a trustworthy standard for security. We bypass traditional centralized servers by utilizing a cutting-edge decentralized relay network, making it significantly harder for any single entity to monitor communications or enforce censorship. The core funding model, explicitly **"Funded by You,"** ensures that our sole accountability is to our users, not to investors or advertisers. This commitment to user control drives every decision we make. Project RelayX is a community-driven initiative dedicated to providing a messaging solution that respects digital sovereignty, fostering a private digital ecosystem.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project RelayX Features Section --><section id="features" class="py-16 px-6 bg-relay-dark border-y border-gray-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <h3 class="text-4xl font-extrabold text-white mb-12">Project RelayX Features</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+
+                <!-- Feature 1: End-to-End Encryption --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">End-to-End Encryption</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        Your messages are secured by industry-leading E2EE protocols. This means only you and the intended recipient can read your chats. We use cryptographic keys managed locally on your device, ensuring that even we cannot access the content of your communications. Your privacy is mathematically protected.
+                    </p>
+                </div>
+
+                <!-- Feature 2: Decentralized by Default --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">Decentralized by Default</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        RelayX utilizes a distributed network architecture, eliminating reliance on any single, central server. This design maximizes resilience, prevents single points of failure, and makes it virtually impossible for third parties to enforce global shutdowns or mass surveillance on the network.
+                    </p>
+                </div>
+
+                <!-- Feature 3: Open-Source & Auditable --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">Open-Source & Auditable</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        The entire application source code is publicly available and freely auditable. This transparency allows security experts and the community to rigorously inspect our systems for vulnerabilities and verify our claims about privacy and encryption. Trust is earned, not just asked for.
+                    </p>
+                </div>
+
+                <!-- Feature 4: No Ads, No Trackers --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">No Ads, No Trackers</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        We guarantee a completely clean, tracker-free user experience. Since we are funded solely by the community, we have zero incentive to collect, analyze, or monetize your personal data or usage patterns. Your focus remains purely on communication.
+                    </p>
+                </div>
+                
+                <!-- Feature 5: Funded by You --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">Funded by You</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        Project RelayX is a community-supported non-profit. Our funding comes directly from users who believe in the mission of private communication. This model ensures that our priorities are always aligned with user security and never dictated by advertisers or commercial interests.
+                    </p>
+                </div>
+
+                <!-- Feature 6: Cross-Platform --><div class="bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-700 hover:border-relay-primary transition duration-300">
+                    <span class="text-4xl block mb-3"></span>
+                    <h4 class="text-2xl font-semibold text-white mb-3">Cross-Platform</h4>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        Stay connected regardless of your device. RelayX provides seamless and consistent functionality across desktop platforms (Windows, Linux) and mobile (Android). Experience full-featured, private messaging without being locked into a single operating system ecosystem.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <section class="space-y-10 pt-10 px-6 py-4 bg-relay-dark border-t border-gray-800 max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold text-center text-white mb-10">Security Design Layers</h2>
+
+            <div class="bg-card p-6 rounded-xl shadow-xl border border-gray-800">
+                <table class="w-full text-left border-separate border-spacing-y-2">
+                    <thead class="text-sm font-medium text-gray-400 border-b border-gray-700">
+                        <tr>
+                            <th class="py-1 pl-4 text-white">Layer</th>
+                            <th class="py-1 text-center text-white">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="group transition duration-150">
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Identity</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each user generates a deterministic private–public keypair from their username and password.</td>
+                        </tr>
+                        <tr class="group transition duration-150">
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Handshake</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">A shared session key is derived between peers using their public IDs (Signal-style ECDH).</td>
+                        </tr>
+                        <tr class="group transition duration-150">
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Encryption</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Messages use Fernet (AES-128 in CBC with HMAC) encryption for robust security.</td>
+                        </tr>
+                        <tr class="group transition duration-150">
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Rotation</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Chat keys are rotated automatically every 10 minutes or 25 messages for forward secrecy.</td>
+                        </tr>
+                        <tr class="group transition duration-150">
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Integrity</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each message includes SHA-256 ID, timestamp (stap), and delivery acknowledgment (ack).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+    <!-- Footer --><footer class="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
+        &copy; 2024 Project RelayX. All rights reserved. | Secured by <span class="text-relay-primary">End-to-End Encryption</span>
+    </footer>
+
+    <script>
+        // New JavaScript for Smooth Scrolling
+        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    // Prevent default anchor click behavior
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start' // Scroll to the top of the element
+                        });
+                    }
+                });
+            });
+        });
+
+        const downloadButtonsContainer = document.getElementById('download-buttons');
+        const userAgent = navigator.userAgent;
+
+        // Data for the download buttons.
+        // NOTE: The glowClass is now just a base class to apply the initial shadow,
+        // and the actual animation is handled on hover via CSS.
+        const downloads = [
+            { os: 'Windows', icon: '&#x1F4BB;', glowClass: 'glow-blue', href: '#', file: 'RelayX-setup.exe', bgColor: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700' },
+            { os: 'Android', icon: '&#x1F4F1;', glowClass: 'glow-green', href: '#', file: 'RelayX.apk', bgColor: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
+            { os: 'Linux', icon: '&#x1F47B;', glowClass: 'glow-orange', href: '#', file: 'RelayX.AppImage', bgColor: 'bg-orange-600', hoverColor: 'hover:bg-orange-700' },
+        ];
+
+        // Simple OS detection logic
+        function detectOS() {
+            if (userAgent.includes('Win')) return 'Windows';
+            if (userAgent.includes('Android')) return 'Android';
+            if (userAgent.includes('Linux') && !userAgent.includes('Android')) return 'Linux';
+            return 'Other'; // Fallback for macOS, iOS, or unknown browsers
+        }
+
+        const detectedOS = detectOS();
+        const recommendedDownload = downloads.find(dl => dl.os === detectedOS);
+        let buttonHtml = '';
+
+        if (recommendedDownload) {
+            // Recommended OS found: Show dynamic, glowing button
+            buttonHtml = `
+                <a href="${recommendedDownload.href}" download="${recommendedDownload.file}"
+                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl ${recommendedDownload.bgColor} ${recommendedDownload.hoverColor} ${recommendedDownload.glowClass} w-full max-w-sm">
+                    <span class="text-3xl">${recommendedDownload.icon}</span>
+                    <span class="text-xl">Download for ${recommendedDownload.os}</span>
+                </a>
+            `;
+        } else {
+            // No supported OS detected: Show fallback button
+            buttonHtml = `
+                <a href="#" 
+                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl bg-gray-500 hover:bg-gray-600 w-full max-w-sm">
+                    <span class="text-xl">Download for Other Platforms</span>
+                </a>
+            `;
+        }
+
+        downloadButtonsContainer.innerHTML = buttonHtml;
+
+    </script>
+</body>
+</html>
