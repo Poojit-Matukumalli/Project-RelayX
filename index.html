@@ -92,6 +92,7 @@
             </h1>
             <nav>
                 <a href="#features" class="text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Features</a>
+                <a href="#footer" class="ml-6 text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Footer (placeholder)</a>
             </nav>
         </div>
     </header>
@@ -135,6 +136,7 @@
                 <div id="download-buttons" class="flex justify-center">
                     <!-- Single Dynamic Button will be injected here by JavaScript --></div>
                 <p class="text-gray-600 mt-4 text-xs">Note: Supports Windows, Android, and Linux. macOS is unsupported.</p>
+                <a href="#" class="text-xs inline-block text-relay-primary hover:border-accent transition duration-300 transform hover:scale-105 group">View all downloads</a>
             </div>
 
         </div>
@@ -163,16 +165,16 @@
     </section>
 
     <!-- About Project RelayX -->
-    <section class="py-16 px-6 bg-relay-dark border-t border-gray-800">
+    <section id = "about" class="py-16 px-6 bg-relay-dark border-t border-gray-800">
         <div class="max-w-7xl mx-auto text-center">
             <h3 class="text-4xl font-extrabold text-white mb-12">About Project RelayX</h3>
             
             <!-- Encasing the content in a card-like div for visual consistency --><div class="bg-gray-800 p-8 rounded-xl shadow-lg transition duration-300 border border-gray-700 max-w-4xl mx-auto text-left">
                 <p class="text-gray-400 leading-relaxed text-lg mb-4">
-                    Project RelayX is a radical new approach to secure, private communication, born out of the belief that privacy is a fundamental right, not a feature you should pay for with your data. Unlike corporate messaging platforms that profit from surveillance capitalism, RelayX operates on a fully open-source, non-profit model. Our architecture is meticulously crafted from the ground up to ensure true end-to-end encryption (E2EE) and robust metadata minimization, guaranteeing that your conversations remain confidential.
+                    Project RelayX is a new approach to secure, private communication, born out of the belief that privacy is a fundamental right, not a feature you should pay for with your data. Unlike corporate messaging platforms that profit from surveillance capitalism, RelayX operates on a fully open-source, non-profit model. Our architecture is meticulously crafted from the ground up to ensure true end-to-end encryption, guaranteeing No Metadata and that your conversations remain confidential.
                 </p>
                 <p class="text-gray-400 leading-relaxed text-lg">
-                    Every line of code is freely auditable by the community, providing unparalleled transparency and establishing a trustworthy standard for security. We bypass traditional centralized servers by utilizing a cutting-edge decentralized relay network, making it significantly harder for any single entity to monitor communications or enforce censorship. The core funding model, explicitly **"Funded by You,"** ensures that our sole accountability is to our users, not to investors or advertisers. This commitment to user control drives every decision we make. Project RelayX is a community-driven initiative dedicated to providing a messaging solution that respects digital sovereignty, fostering a private digital ecosystem.
+                    Every line of code is freely auditable by the community, providing transparency and establishing a trustworthy standard for security. We bypass traditional centralized servers by utilizing a cutting-edge decentralized relay network, making it significantly harder for any single entity to monitor communications or enforce censorship. The core funding model, explicitly **"Funded by You,"** ensures that our sole accountability is to our users, not to investors or advertisers. This commitment to user control drives every decision we make. Project RelayX is a community-driven initiative dedicated to providing a messaging solution that respects digital sovereignty, fostering a private digital ecosystem.
                 </p>
             </div>
         </div>
@@ -188,7 +190,7 @@
                     <span class="text-4xl block mb-3"></span>
                     <h4 class="text-2xl font-semibold text-white mb-3">End-to-End Encryption</h4>
                     <p class="text-gray-400 leading-relaxed text-sm">
-                        Your messages are secured by industry-leading E2EE protocols. This means only you and the intended recipient can read your chats. We use cryptographic keys managed locally on your device, ensuring that even we cannot access the content of your communications. Your privacy is mathematically protected.
+                        Your messages are secured by industry-leading E2EE protocols. This means only you and the intended recipient can read your chats. We use cryptographic keys managed locally on your device RAM, ensuring that even we cannot access the content of your communications. Your privacy is our Committment.
                     </p>
                 </div>
 
@@ -248,24 +250,24 @@
                     </thead>
                     <tbody>
                         <tr class="group transition duration-150">
-                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Identity</td>
-                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each user generates a deterministic private–public keypair from their username and password.</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Key-Pair</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each user generates a deterministic private–public x25519 Ephemeral keypair using Cryptography </td>
                         </tr>
                         <tr class="group transition duration-150">
                             <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Handshake</td>
-                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">A shared session key is derived between peers using their public IDs (Signal-style ECDH).</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">A shared Key, 2 Nonces are exchanged between 2 Users. A session Key is thus generated</td>
                         </tr>
                         <tr class="group transition duration-150">
                             <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Encryption</td>
-                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Messages use Fernet (AES-128 in CBC with HMAC) encryption for robust security.</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Messages use SHA-256, AES-128, AEAD, x25519, Fernet, HKDF etc. for security.</td>
                         </tr>
                         <tr class="group transition duration-150">
                             <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Rotation</td>
-                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Chat keys are rotated automatically every 10 minutes or 25 messages for forward secrecy.</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Chat keys are rotated automatically every 10 minutes or 25 messages making it hard to crack.</td>
                         </tr>
                         <tr class="group transition duration-150">
-                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Integrity</td>
-                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each message includes SHA-256 ID, timestamp (stap), and delivery acknowledgment (ack).</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] font-semibold text-accent rounded-l-lg group-hover:bg-[#1a232f]">Extra</td>
+                            <td class="py-3 pl-4 text-[#ADD8E6] rounded-r-lg group-hover:bg-[#1a232f]">Each message includes a Timestamp and Associated Data to stop MitM and replay.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -273,14 +275,14 @@
         </section>
 
 
-    <!-- Footer --><footer class="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
+    <!-- Footer --><footer id="footer" class="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
         &copy; 2024 Project RelayX. All rights reserved. | Secured by <span class="text-relay-primary">End-to-End Encryption</span>
     </footer>
 
     <script>
         // New JavaScript for Smooth Scrolling
-        lucide.createIcons();
         document.addEventListener('DOMContentLoaded', () => {
+            // Target all internal anchor links starting with '#'
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     // Prevent default anchor click behavior
@@ -290,6 +292,7 @@
                     const targetElement = document.querySelector(targetId);
 
                     if (targetElement) {
+                        // Use scrollIntoView with 'smooth' behavior for animation
                         targetElement.scrollIntoView({
                             behavior: 'smooth',
                             block: 'start' // Scroll to the top of the element

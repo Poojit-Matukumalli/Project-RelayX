@@ -8,7 +8,6 @@ if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
 from encryptdecrypt.shield_crypto import shield_encrypt, derive_shield_key
-from Keys.chat_key.derive_chat_key import derive_chat_key
 
 
 def pad_key(key: bytes) -> bytes:

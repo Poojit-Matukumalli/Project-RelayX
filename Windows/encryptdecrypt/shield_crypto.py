@@ -10,8 +10,6 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from Keys.chat_key.derive_chat_key import derive_chat_key
-
 # Constants
 AESGCM_KEY_SIZE = 32          # 256-bit AES-GCM
 AESGCM_NONCE_SIZE = 12        # recommended nonce size for GCM
