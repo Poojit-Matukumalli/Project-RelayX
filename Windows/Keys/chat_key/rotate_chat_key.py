@@ -1,10 +1,13 @@
-import hashlib
-import base64
-import time
-import threading
-import sys, os
+"""         Key rotator module
 
-# Import fix
+This module is responsible for key rotation, monitoring and checking
+Part of Project RelayX, By Poojit Matukumalli
+"""
+# Imports 
+import time, threading, sys, os
+
+# ================== Dynamic imports ===================================================================================
+
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
@@ -12,11 +15,14 @@ if ROOT_DIR not in sys.path:
 from network.Client_RelayX import send_via_tor
 from Keys.public_key_private_key.generate_keys import handshake_initiator
 
+# ========================== Onion Configuration =======================================================================
+
 addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
 with open(addr_file, "r") as f:
     addr_user_onion = f.read()
 user_onion = addr_user_onion
-# Global state
+
+# =============================== Global state =========================================================================
 
 MESSAGE_COUNTER = 0
 LAST_ROTATE_TIME = time.time()
@@ -24,6 +30,7 @@ LAST_ROTATE_TIME = time.time()
 ROTATE_INTERVAL = 600           
 ROTATE_AFTER_MESSAGES = 25
 
+# ================================== Functions ==========================================================================
 
 async def rotate_chat_key(peer_onion):
     global MESSAGE_COUNTER, LAST_ROTATE_TIME
@@ -42,6 +49,7 @@ async def rotate_chat_key(peer_onion):
             print(f"[KEY ROTATION ERROR] Failed to perform handshake after rotation: {e}")
     return session_key
 
+# --------------------------------------------------------------------------------------------
 
 async def check_rotation(peer_onion):
     """
@@ -56,6 +64,7 @@ async def check_rotation(peer_onion):
     if MESSAGE_COUNTER >= ROTATE_AFTER_MESSAGES or time_elapsed >= ROTATE_INTERVAL:
         await rotate_chat_key(peer_onion)
 
+# -----------------------------------------------------------------------------------
 
 def auto_rotation_monitor(peer_onion):
     """

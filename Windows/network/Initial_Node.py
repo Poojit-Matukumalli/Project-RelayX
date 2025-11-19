@@ -4,20 +4,21 @@ Basically, this thing is focused on client connections.
 
 Author- Poojit Matukumalli
 """
-
+# Imports
 from aiohttp_socks import open_connection
 import sys, os, json, asyncio
 
-# === PATH FIX (ensures proper imports) ===
+# =============================== Dynamic imports ======================================================================
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from network.Client_RelayX import relay_send, send_via_tor
+from network.Client_RelayX import relay_send
 from encryptdecrypt.shield_crypto import derive_shield_key
 from encryptdecrypt.encrypt_message import encrypt_message
-from Keys.public_key_private_key.generate_keys import make_init_message, make_resp_message
+
+# =================================== Configuration =======================================================================
 
 user_onion = os.path.join("Windows","network","Networking","data","HiddenService","hostname")
 PEER_PUB_KEY = None
@@ -35,7 +36,7 @@ async def start_client(user_onion, recipient_onion,session_key):
     except Exception as e:
         print(f"[CLIENT ERROR] {e}")
 
-# checks whether yo frnd online or not
+# checks recipient online status ---------------------------------------------------------------------------------
 
 async def verify_connection(
         onion :str,

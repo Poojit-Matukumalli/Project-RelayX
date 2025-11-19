@@ -1,7 +1,4 @@
-import subprocess
-import time
-import os
-import sys
+import subprocess, time, os, sys
 
 PLATFORM = os.name 
 

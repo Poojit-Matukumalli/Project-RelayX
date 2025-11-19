@@ -1,14 +1,15 @@
-"""
-User side RelayX relay. Recieves and sends messages.
+"""              Client_RelayX module
+
+User side RelayX relay. Helpers for Recieving and sending messages.
 By- Poojit Matukumalli
 thats it. Go read the code 🙏
 """
-import json;      import random;
-import asyncio;   import aiohttp_socks as asocks
-import os;        import time  ; import subprocess
-import sys
+# ==================== Imports =========================================================================================
 
-# Import fixes
+import json, random, aiohttp_socks as asocks
+import asyncio, os, time, sys
+
+# ============================== Dynamic imports =======================================================================
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
@@ -18,11 +19,15 @@ from encryptdecrypt.encrypt_message import encrypt_message
 from encryptdecrypt.decrypt_message import decrypt_message
 from Keys.public_key_private_key.generate_keys import handshake_responder
 
+# =================== User onion configuration =========================================================================
+
 addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
 with open(addr_file, "r") as f:
     addr_user_onion = f.read()
 user_onion = addr_user_onion
-# Helper
+
+# ========================= Helpers ====================================================================================
+ 
 def load_active_relays():       # Loads active relays... Duh
     relay_file = os.path.join("Windows", "network", "relay_list.json")
     try:
@@ -40,15 +45,16 @@ def load_active_relays():       # Loads active relays... Duh
         print(f"[ERR] Failed to load {relay_file}: {e}")
         return []
 
+# Helpers ---------------------------------------------------------------------------------------------------------------
 
-# Helper
 def encrypt_payload(msg: str, chat_key: bytes) -> str:
     return encrypt_message(chat_key, msg)              # TODO : GOTO encrypt_message
 
-# Helper
 def decrypt_payload(msg: str, chat_key: bytes) -> str:
-    return decrypt_message(msg, chat_key)              # TODO : GOTO decrypt_message
+    return decrypt_message(chat_key, msg)              # TODO : GOTO decrypt_message
 sys_rand = random.SystemRandom()
+
+# Route builder (Helper)--------------------------------------------------------------------------------------------------
 
 async def build_route(active_relays, min_hops=2, max_hops=2):
     if not active_relays:
@@ -60,7 +66,8 @@ async def build_route(active_relays, min_hops=2, max_hops=2):
     route = shuffled_list[:k]
     return route
 
-# Helper
+# Helper ----------------------------------------------------------------------------------------------------------------
+
 def parse_hostport(addr: str):
     try:
         h, p = addr.rsplit(":", 1)
@@ -68,8 +75,7 @@ def parse_hostport(addr: str):
     except:
         return None, None
 
-
-# Helper, Accessed by relay_send()
+# Helper, Accessed by relay_send() ---------------------------------------------------------------------------------------
 async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
     try:
         reader, writer = await asocks.open_connection(
@@ -86,9 +92,8 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
     except Exception as e:
         print(f"[FAIL] Transmission error → {onion_route}:{port} | {e}")
 
+# Helper, Accessed in the executor script --------------------------------------------------------------------------------
 
-# Accessed in the executor script
-# sending logic
 async def relay_send(message ,user_onion, recipient_onion, show_route=True):
     try:
         active_relays = load_active_relays()
@@ -125,9 +130,8 @@ async def relay_send(message ,user_onion, recipient_onion, show_route=True):
     except Exception as e:
         print(f"[ERR] Relay send failed: {e}")
             
+# Helper. Listener & Incoming --------------------------------------------------------------------------------------------  
 
-# Helper
-# the listener 
 async def handle_handshake_key(reader, writer):
     try:
         data = await reader.read(8192)
@@ -139,6 +143,8 @@ async def handle_handshake_key(reader, writer):
     finally:
         writer.close()
         await writer.wait_closed()
+
+# ---------------------------------------------------
 
 async def handle_incoming(reader, writer):
     try:
@@ -156,8 +162,8 @@ async def handle_incoming(reader, writer):
         writer.close()
         await writer.wait_closed()
 
- 
-# Accessed in the executor script
+# Accessed in the executor script --------------------
+
 async def inbound_listener():
     while True:
         try :

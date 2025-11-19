@@ -1,32 +1,51 @@
-import json;      import random;                
-import asyncio;   import aiohttp_socks as asocks
-import os;        import time  ; import subprocess
-import signal;     import hashlib
-import sys;       import threading
+"""                     Executor.py
 
-from Initial_Node import start_client, verify_connection
-from Client_RelayX import send_via_tor, inbound_listener, handle_handshake_key
+This is the main script that handles the chat loop, Function calls and future UI connections.
+It accesses functions which are all across several files.
+A part of Project RelayX, by Poojit Matukumalli
+Suggestions and improvements are Welcome (Not AI btw)
+"""
+# ============================ Imports ================================================================================
+import json, subprocess, sys            
+import asyncio, os, signal
+
+# ============= Dynamic imports ========================================================================================
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from Keys.public_key_private_key.generate_keys import handshake_initiator, handshake_responder
-from Keys.chat_key.rotate_chat_key import auto_rotation_monitor
+from Keys.public_key_private_key.generate_keys import handshake_initiator
+from Initial_Node import start_client, verify_connection
+from Client_RelayX import send_via_tor, inbound_listener, handle_handshake_key
 
 
-# Setting up the user's onion url/route/address or whatever it is
-filename = r"Windows\network\details.json"  # TEMPORARY
+# ==================== USERNAME & PASSWORD ==============================================================================
+
+filename = r"Windows\network\details.json" # Temporary file. will be replaced 
 with open(filename, "r") as f:
     data = json.load(f)
     username = data["Username"]
     password = data["Password"]
 
-addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
-with open(addr_file, "r") as f:
-    addr_user_onion = f.read()
+# =================== Onion setup ======================================================================================
 
-# Setting up Tor in the background
+addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
+network_service = os.path.join("Windows", "network", "network_service.py")
+
+if not os.path.exists(addr_file):
+    subprocess.Popen([f"python -u {network_service}"],
+            creationflags= subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL         
+    )
+if os.path.exists(addr_file):
+    with open(addr_file, "r") as f:
+        addr_user_onion = f.read()
+else:
+    print("[ERROR] Unable to fetch onion")
+
+# ================ Background tor process ==============================================================================
 
 tor_path = os.path.join("Windows","network", "Networking", "tor", "tor.exe")
 Tor_bg_process = subprocess.Popen([
@@ -36,8 +55,7 @@ Tor_bg_process = subprocess.Popen([
         stderr= subprocess.DEVNULL
 )
 
-
-# Configuration ig
+# ==================== Configuration ===================================================================================
 session_key = None
 user_onion = addr_user_onion    # TODO : Add actual data fetcher using SQLite or something else
 recipient_onion = ""            # TODO : add it so that the message page, on which the user is on decides it. Hopefully... after the UI 
@@ -45,7 +63,7 @@ relay_file = os.path.join("Windows", "network", "relay_list.json")
 proxy = ("127.0.0.1", 9050)
 listen_port = 5050
 
-# Helper
+# ==================== Helpers =========================================================================================
 async def inbound_listener_func():
     global session_key
     async def _handler(reader, writer):
@@ -59,18 +77,19 @@ async def inbound_listener_func():
 
 async def listener_task():
     await inbound_listener_func()
+    
+# ==================================== Main loop ======================================================================= 
 
 async def main():
     global session_key
-    print("                                  Project RelayX\n")
+    print("-" * 120)
+    print(f"{" "*50}Project RelayX\n")
     global username, password
-
-    priv_key = hashlib.sha256((username + password).encode()).hexdigest()
     print(f"Your Onion ID: {user_onion}")
     global recipient_onion
     recipient_onion = input("Enter peer's Onion address: ").strip()
 
-                                    #TODO:Derive initial chat key
+    
     online = await verify_connection(recipient_onion)
     if online:
         asyncio.create_task(listener_task())
@@ -82,6 +101,9 @@ async def main():
             print("Handshake Failed")
     else:
         print("Offline")
+
+# ==================================== Running & Error handling ========================================================
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())

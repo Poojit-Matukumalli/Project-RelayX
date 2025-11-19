@@ -1,16 +1,26 @@
+# ============================================== Imports ===================================================================
+
 import base64, os, time, asyncio
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 
+# ---------------- Pending handshakes ---------------------------------------------
+
 pending_handshakes = {} # Dict{str, Tuple(X25519PrivateKey, bytes, asyncio.Future)}
+
+# ================================================ Functions ===========================================================
 
 def b64_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode()
 
+# ---------------------------------------------------
+
 def b64_decode(data: str) -> bytes:
     return base64.urlsafe_b64decode(data.encode())
+
+# ----------------------------------------------------
 
 def generate_x25519(): # -> Tuple(X25519PrivateKey, bytes)
     private_key = X25519PrivateKey.generate()
@@ -19,9 +29,13 @@ def generate_x25519(): # -> Tuple(X25519PrivateKey, bytes)
     public_bytes = public_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
     return private_key, public_bytes
 
+# ------------------------------------------------------------------------------------------
+
 def derive_shared_key(private_key: X25519PrivateKey, peer_public_key_bytes: bytes) -> bytes:
     peer_pub = X25519PublicKey.from_public_bytes(peer_public_key_bytes)
     return private_key.exchange(peer_pub)
+
+# ----------------------------------------------------------------------------------------------
 
 def derive_session_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> bytes:
     salt = nonce_a + nonce_b
@@ -33,7 +47,7 @@ def derive_session_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> byt
         info=b"RelayX-ephemeral-session-key",
     )
     return hkdf.derive(shared_key)
-
+# --------------------------------------------------------------------------------
 def make_init_message(public_bytes,nonce_a, user_onion) -> dict:
     return {
         "type": "HANDSHAKE_INIT",
@@ -42,6 +56,8 @@ def make_init_message(public_bytes,nonce_a, user_onion) -> dict:
         "nonce": b64_encode(nonce_a),
         "ts" : int(time.time())
     }
+
+# -------------------------------------------------------------------------------------
 
 def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
     return {
@@ -52,6 +68,8 @@ def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
         "nonce_b": b64_encode(nonce_b),
         "ts" : int(time.time())
     }
+
+# ============================================== Handshake =============================================================
 
 async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, proxy=("127.0.0.1", 9050), timeout=10.0):
     my_private, my_public_bytes = generate_x25519()
@@ -76,6 +94,8 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, pr
         return None
     finally:
         pending_handshakes.pop(peer_onion, None)
+
+# ========================================= Reciever (Handhskake) ====================================================
 
 async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, proxy=("127.0.0.1", 9050)):
     type = envelope.get("type")

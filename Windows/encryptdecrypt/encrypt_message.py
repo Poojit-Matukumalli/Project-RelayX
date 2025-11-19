@@ -1,14 +1,22 @@
+"""             Encrypter module
+
+Encrypts messages. uses helpers from shield crypto module
+Part of Project RelayX, By Poojit Matukumalli
+"""
+
 from cryptography.fernet import Fernet
 import base64, os, sys
 import hashlib
 
-# Fix import 
+# =============================== Dynamic imports ======================================================================
+
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
 from encryptdecrypt.shield_crypto import shield_encrypt, derive_shield_key
 
+# =================================== Functions =======================================================================
 
 def pad_key(key: bytes) -> bytes:
     key_hash = hashlib.sha256(key).digest()

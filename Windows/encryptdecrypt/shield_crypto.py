@@ -1,21 +1,21 @@
-import os, sys
-import base64
-from typing import Optional
+"""             Shield Crypto module
 
+Helpers for Encrypt and decrypt functions
+"""
+import os, base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
+# =========================================== Configuration ==============================================================
 
-# Constants
 AESGCM_KEY_SIZE = 32          # 256-bit AES-GCM
 AESGCM_NONCE_SIZE = 12        # recommended nonce size for GCM
 HKDF_INFO = b"RelayX-shield-v1"  # context string for domain separation
 
-def derive_shield_key(chat_key: bytes, salt: Optional[bytes] = None) -> bytes:
+# =================================== Functions =======================================================================
+
+def derive_shield_key(chat_key: bytes, salt = None) -> bytes:
     # TODO, Add salt (optional) to HKDF for session uniqueness
     ikm = chat_key  # input key material
     hkdf = HKDF(
@@ -26,11 +26,14 @@ def derive_shield_key(chat_key: bytes, salt: Optional[bytes] = None) -> bytes:
     )
     return hkdf.derive(ikm)
 
+# ----------------------------------------------------------------------------------------------------
+
+#                             WARNING
 # DO NOT CHANGE ASSOCIATED DATA UNLESS ALL YOUR CONTACTS DO THE SAME.
 # CHANGING IT WILL CAUSE DECRYPTION KILLING ITSELF LIKE MY SANITY.
 
-def shield_encrypt(key: bytes, plaintext: str, associated_data: Optional[bytes] = b"RelayX") -> str: 
-    # Encrypts the plaintext using AES-GCM and returns urlsafe-base64 str
+def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> str: 
+    # Encrypts the plaintext using AES-GCM and returns urlsafe-base64 str.
     try:
         aesgcm = AESGCM(key)
         nonce = os.urandom(AESGCM_NONCE_SIZE)
@@ -43,8 +46,9 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data: Optional[bytes] 
         print(f"[SHIELD ENCRYPT ERROR]")
         return ""
 
+# ----------------------------------------------------------------------------------------------------
 
-def shield_decrypt(key: bytes, encoded: str, associated_data: Optional[bytes] = b"RelayX") -> str: 
+def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX") -> str: 
     # Decrypts the urlsafe-base64 (nonce || ciphertext). On failure, this thing returns empty string.
     try:
         payload = base64.urlsafe_b64decode(encoded)
