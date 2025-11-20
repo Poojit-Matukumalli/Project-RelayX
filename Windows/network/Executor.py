@@ -56,6 +56,7 @@ Tor_bg_process = subprocess.Popen([
 )
 
 # ==================== Configuration ===================================================================================
+
 session_key = None
 user_onion = addr_user_onion    # TODO : Add actual data fetcher using SQLite or something else
 recipient_onion = ""            # TODO : add it so that the message page, on which the user is on decides it. Hopefully... after the UI 
