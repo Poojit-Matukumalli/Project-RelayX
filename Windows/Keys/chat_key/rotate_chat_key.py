@@ -17,7 +17,7 @@ from Keys.public_key_private_key.generate_keys import handshake_initiator
 
 # ========================== Onion Configuration =======================================================================
 
-addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
+addr_file = os.path.join(ROOT_DIR, "Windows", "network", "Networking", "data", "HiddenService","hostname")
 with open(addr_file, "r") as f:
     addr_user_onion = f.read()
 user_onion = addr_user_onion
