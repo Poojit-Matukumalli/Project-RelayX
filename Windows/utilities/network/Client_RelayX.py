@@ -21,7 +21,7 @@ from Keys.public_key_private_key.generate_keys import handshake_responder
 
 # =================== User onion configuration =========================================================================
 
-addr_file = os.path.join("Windows", "network", "Networking", "data", "HiddenService","hostname")
+addr_file = os.path.join("Windows","Networking", "data", "HiddenService","hostname")
 with open(addr_file, "r") as f:
     addr_user_onion = f.read()
 user_onion = addr_user_onion
@@ -29,7 +29,7 @@ user_onion = addr_user_onion
 # ========================= Helpers ====================================================================================
  
 def load_active_relays():       # Loads active relays... Duh
-    relay_file = os.path.join("Windows", "network", "relay_list.json")
+    relay_file = os.path.join("Windows","utilities", "network", "relay_list.json")
     try:
         with open(relay_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -47,10 +47,10 @@ def load_active_relays():       # Loads active relays... Duh
 
 # Helpers ---------------------------------------------------------------------------------------------------------------
 
-def encrypt_payload(msg: str, chat_key: bytes) -> str:
+def encrypt_payload(chat_key: bytes, msg) -> str:
     return encrypt_message(chat_key, msg)              # TODO : GOTO encrypt_message
 
-def decrypt_payload(msg: str, chat_key: bytes) -> str:
+def decrypt_payload(chat_key: bytes, msg) -> str:
     return decrypt_message(chat_key, msg)              # TODO : GOTO decrypt_message
 sys_rand = random.SystemRandom()
 
@@ -145,33 +145,3 @@ async def handle_handshake_key(reader, writer):
         await writer.wait_closed()
 
 # ---------------------------------------------------
-
-async def handle_incoming(reader, writer):
-    try:
-        data = await reader.read(8192)
-        msg_raw = data.decode()
-        try:
-            envelope = json.loads(msg_raw)          
-            decrypted = decrypt_payload(envelope.get("payload", ""))
-            print(f"\n[INCOMING MESSAGE]\nFrom: {envelope.get('from')}\nMsg: {decrypted}\n")
-        except Exception:
-            print(f"[RAW INCOMING DATA]: {msg_raw}")
-    except Exception as e:
-        print(f"[ERR] Inbound handler crashed: {e}")
-    finally:
-        writer.close()
-        await writer.wait_closed()
-
-# Accessed in the executor script --------------------
-
-async def inbound_listener():
-    while True:
-        try :
-            listen_port = 5050
-            server = await asyncio.start_server(handle_incoming, "127.0.0.1", listen_port)
-            print(f"[LISTENER] Active on 127.0.0.1:{listen_port}")
-            async with server:
-                await server.serve_forever()
-        except Exception as e:
-            print(f"[ERR] Listener crashed: {e}")
-            await asyncio.sleep(5)

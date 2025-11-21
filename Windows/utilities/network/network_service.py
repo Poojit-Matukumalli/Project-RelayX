@@ -1,15 +1,11 @@
 import subprocess, time, os, sys
-
-PLATFORM = os.name 
+ 
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "Networking"))
 DATA_DIR = os.path.join(BASE_DIR, "data","tor_necessities")
 HS_DIR = os.path.join(BASE_DIR,"data","HiddenService")
 
-if PLATFORM == "nt":
-    TOR_EXE = os.path.join(BASE_DIR, "tor", "tor.exe")
-else:
-    TOR_EXE = os.path.join(BASE_DIR, "tor", "tor")
+TOR_EXE = os.path.join(BASE_DIR, "tor", "tor.exe")
 
 os.makedirs(HS_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)

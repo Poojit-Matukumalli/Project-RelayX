@@ -15,22 +15,19 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from network.Client_RelayX import relay_send
-from encryptdecrypt.shield_crypto import derive_shield_key
-from encryptdecrypt.encrypt_message import encrypt_message
 
 # =================================== Configuration =======================================================================
 
-details_json = os.path.join("Windows","network","details.json")
+details_json = os.path.join("Windows","utilities","network","details.json")
 
-hostname_path = os.path.join("Windows","network","Networking","data","HiddenService","hostname")
+hostname_path = os.path.join("Windows","Networking","data","HiddenService","hostname")
 with open(hostname_path, "r") as f:
     user_onion = f.read()
 
 # -----------------------------------------------------------------------------------------------------------
 
 def details_helper(parameter, mode):
-    return json.load(open(os.path.join("Windows","network","details.json"), mode))[f"{parameter}"]
+    return json.load(open(os.path.join("Windows","utilities","network","details.json"), mode))[f"{parameter}"]
 
 def create_keys():
     private_key = ed25519.Ed25519PrivateKey.generate()  # None password is temp
@@ -74,18 +71,6 @@ user_email = details_helper("Email", "r")
 email_password = details_helper("Email_app_Password", "r")
 
 # =================================== Functions =======================================================================
-
-async def start_client(user_onion, recipient_onion,session_key):
-    print(f"[CLIENT READY] Type messages to send. '/exit' to quit.")
-    shield_key = derive_shield_key(session_key)
-    try:
-        while True:
-            msg = input("You: ")
-            if msg.lower() == "/exit":
-                break
-            await relay_send(encrypt_message(session_key, msg), user_onion, recipient_onion)
-    except Exception as e:
-        print(f"[CLIENT ERROR] {e}")
 
 # checks recipient online status ---------------------------------------------------------------------------------
 

@@ -1,0 +1,39 @@
+import asyncio, sys, os ; from time import time
+
+WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if WINDOWS_DIR not in sys.path:
+    sys.path.insert(0, WINDOWS_DIR)
+
+from Keys.public_key_private_key.generate_keys import handshake_initiator
+from RelayX.utils.queue import rotation_lock, rotation_started
+from RelayX.utils.config import ROTATE_INTERVAL
+
+session_key = None
+last_rotate_time = time()
+
+async def ensure_rotation_started():
+    global rotation_started
+    async with rotation_lock:
+        if not rotation_started:
+            rotation_started = True
+
+async def key_rotation(user_onion, peer_onion, send_via_tor, handshake_initiator):
+    return await handshake_initiator(user_onion, peer_onion, send_via_tor)
+
+async def auto_rotation_monitor(user_onion, peer_onion, send_via_tor):
+    """
+    Background thread to automatically rotate keys every ROTATE_INTERVAL seconds.
+    """
+    global session_key, last_rotate_time, recipient_onion
+    while True:
+        try:
+            if not recipient_onion:
+                await asyncio.sleep(5)
+                continue
+            if time() - last_rotate_time >= ROTATE_INTERVAL:
+                session_key = await key_rotation(user_onion,peer_onion, send_via_tor, handshake_initiator)
+                last_rotate_time = time()
+            asyncio.sleep(30)
+        except Exception as e:
+            await asyncio.sleep(1)
+
