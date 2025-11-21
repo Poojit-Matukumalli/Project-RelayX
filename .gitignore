@@ -10,5 +10,4 @@ tor_necessities
 geoip
 geoip6
 
-private_key.pem
-public_key.pem
+*.pem
