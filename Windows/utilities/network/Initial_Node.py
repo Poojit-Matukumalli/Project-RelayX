@@ -5,17 +5,22 @@ Basically, this thing is focused on client connections.
 Author- Poojit Matukumalli
 """
 # Imports
-from aiohttp_socks import open_connection ; import sys, os, json, asyncio, smtplib
-import imaplib, base64 ; from cryptography.fernet import Fernet
-from hashlib import sha256  ; from base64 import urlsafe_b64encode
+from email.message import EmailMessage
+from aiohttp_socks import open_connection
+import sys, os, json, asyncio, smtplib
+import imaplib, base64
+from cryptography.fernet import Fernet
+from hashlib import sha256
+from base64 import urlsafe_b64encode
 from cryptography.hazmat.primitives.asymmetric import ed25519 ; from cryptography.hazmat.primitives import serialization
+import keyring
 # =============================== Dynamic imports ======================================================================
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
+WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if WINDOWS_DIR not in sys.path:
+    sys.path.insert(0, WINDOWS_DIR)
 
-
+from RelayX.database.crud import add_user
 # =================================== Configuration =======================================================================
 
 details_json = os.path.join("Windows","utilities","network","details.json")
@@ -23,52 +28,44 @@ details_json = os.path.join("Windows","utilities","network","details.json")
 hostname_path = os.path.join("Windows","Networking","data","HiddenService","hostname")
 with open(hostname_path, "r") as f:
     user_onion = f.read()
-
+Service_Name = "RelayX"
+key_name = "sign_key"
 # -----------------------------------------------------------------------------------------------------------
 
 def details_helper(parameter, mode):
     return json.load(open(os.path.join("Windows","utilities","network","details.json"), mode))[f"{parameter}"]
 
-def create_keys():
-    private_key = ed25519.Ed25519PrivateKey.generate()  # None password is temp
-    public_key = private_key.public_key()      
-
-    with open("private_key.pem", "wb") as f:
-        f.write(private_key.private_bytes(
+def create_priv_key():
+    private_key = ed25519.Ed25519PrivateKey.generate()
+    pem = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
-            )
         )
-    with open("public_key.pem", "wb") as f:
-        f.write(public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-            )
-        )
-    return private_key, public_key
+    keyring.set_password(Service_Name, key_name, pem.decode())
+    return private_key
 
 def load_priv_sign():
-    with open(os.path.abspath("private_key.pem"), "rb") as f:
-        public_key = serialization.load_pem_private_key(f.read(), password=None)
-    return public_key
-
-def load_pub_sign():
-    with open(os.path.abspath("public_key.pem"), "rb") as f:
-       private_key = serialization.load_pem_public_key(f.read())
-       return private_key
+    global Service_Name, key_name
+    stored_pem = keyring.get_password(Service_Name, key_name)
+    if stored_pem:
+        private_key = serialization.load_pem_private_key(stored_pem.encode(), password=None)
+        return private_key
+    else:
+        return create_priv_key()
 
 # Details ------------------------------------------------------------------------------------------------------
 
 if os.path.exists(os.path.abspath("private_key.pem")):
     private_key_sign = load_priv_sign()
-    public_key_sign = load_pub_sign()
 else:
-    private_key_sign, public_key_sign = create_keys()
+    private_key_sign = create_priv_key()
 
 USERNAME = details_helper("Username", "r")
 user_email = details_helper("Email", "r")
 email_password = details_helper("Email_app_Password", "r")
+private_key_sign = load_priv_sign()
+public_key_sign = private_key_sign.public_key()
 
 # =================================== Functions =======================================================================
 
@@ -125,11 +122,29 @@ def hash_decrypt(ciphertext, recipient_username, user=USERNAME):
 
 # ------------------------------------------------------------------
 
-def read_email(user_email=user_email, user_password=email_password):
+def email_helper(user_email, password, recipient_email, subject, body):
+    message = EmailMessage()
+    message["From"] = user_email
+    message["To"] = recipient_email
+    message["Subject"] = subject
+    message.set_content(body.decode() if isinstance(body, bytes) else body)
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as s:
+        s.starttls()
+        s.login(user_email, password)
+        s.send_message(message)
+
+# -------------------------------------------------------------------------------------
+
+def read_email(user_email=user_email, user_password=email_password, subject_filter=None):
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(user_email, user_password)
     mail.select("inbox")
-    _, data = mail.search(None, "ALL")
+    if subject_filter:
+        search_criteria = f'(HEADER Subject "{subject_filter}")'
+    else:
+        search_criteria = "ALL"
+    _, data = mail.search(None, search_criteria)
     email_ids = data[0].split()
     
     if not email_ids:
@@ -141,28 +156,42 @@ def read_email(user_email=user_email, user_password=email_password):
     raw_str = raw_email.decode(errors="ignore")
     body = raw_str.split("\r\n\r\n", 1)[-1].strip()
     return body.encode()
-    
 
+# ------------------------------------------------------------------------------------------------------------
 
 async def auto_add_user(recipient_username, recipient_email, user_email=user_email, password=email_password):
     global user_onion
-    msg = f"{hash_encrypt(recipient_username)}"
-    with smtplib.SMTP("smtp.gmail.com", 587) as s:
-        s.starttls() ; s.login(user_email, password)
-        s.sendmail(user_email, recipient_email, msg)
+    hash = hash_encrypt(recipient_username)
+    msg_body = f"""
+                {hash}
+                {public_key_sign}
+               """
+    subject_line = f"RelayX invite"
+    await asyncio.to_thread(email_helper, user_email, password, recipient_email, subject_line, msg_body)  
 
 
-    async def helper_read(recipient_username):
-        raw = read_email()
-        recipient_onion = hash_decrypt(raw, recipient_username)
-        with open(os.path.join("Windows","network", "contacts.json"), "r+") as f:
-            data = json.load(f)
-            data[recipient_username] = recipient_onion.decode()
-            f.seek(0)
-            json.dump(data, f, indent=4)
-    bg_process = asyncio.create_task(helper_read(recipient_username))
-    await bg_process
+    async def helper_read():
+        try:
+            raw = await asyncio.to_thread(read_email, user_email, password, subject_filter="RelayX invite")
+            if raw:
+                recipient_onion = hash_decrypt(raw, recipient_username)
+                recipient_public_key = None # temp
+                await add_user(
+                    username=recipient_username,
+                    onion=recipient_onion.decode(),
+                    email=recipient_email,
+                    public_key=recipient_public_key
+                )
 
+        except Exception as e:
+            asyncio.sleep(2)
+    await helper_read()
 
-print(private_key_sign)
-print(public_key_sign)
+# -------------------------------------------
+
+async def send_email(*args, **kwargs):
+    await asyncio.to_thread(auto_add_user, *args, **kwargs)
+
+async def email_read(*args,**kwargs):
+    await asyncio.to_thread(read_email, *args,**kwargs)
+    

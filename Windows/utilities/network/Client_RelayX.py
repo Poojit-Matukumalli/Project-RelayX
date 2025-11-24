@@ -7,7 +7,7 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import asyncio, os, time, sys
+import os, time, sys
 
 # ============================== Dynamic imports =======================================================================
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 
-from api import init, connect, send, recieve
+from api import init, connect, send, recieve, clear_chat
 
 app = FastAPI()
 
@@ -9,7 +9,7 @@ app.include_router(init.router)
 app.include_router(connect.router)
 app.include_router(send.router)
 app.include_router(recieve.router)
-
+app.include_router(clear_chat.router)
 @app.get("/status")
 def status():
     return {"Online":True}
