@@ -15,5 +15,5 @@ async def load_onion():
             with open(addr_file, "r") as f:
                 addr_user_onion = f.read()
                 return addr_user_onion
-        asyncio.sleep(0.2)
+        await asyncio.sleep(0.2)
     return None

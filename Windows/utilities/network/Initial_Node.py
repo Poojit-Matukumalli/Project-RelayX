@@ -152,10 +152,22 @@ def read_email(user_email=user_email, user_password=email_password, subject_filt
     
     latest_id = email_ids[-1]
     _, message_data = mail.fetch(latest_id, "(RFC822)")
-    raw_email = message_data[0][1]
-    raw_str = raw_email.decode(errors="ignore")
+    if not message_data:
+        return None
+    raw_email = None
+    for part in message_data:
+        if isinstance(part, tuple) and part[1]:
+            raw_email = part[1]
+            break
+    if raw_email is None:
+        return None
+    if isinstance(raw_email, bytes):
+        raw_str = raw_email.decode(errors="ignore")
+    else:
+        raw_str = str(raw_email)
     body = raw_str.split("\r\n\r\n", 1)[-1].strip()
     return body.encode()
+
 
 # ------------------------------------------------------------------------------------------------------------
 
@@ -180,11 +192,10 @@ async def auto_add_user(recipient_username, recipient_email, user_email=user_ema
                     username=recipient_username,
                     onion=recipient_onion.decode(),
                     email=recipient_email,
-                    public_key=recipient_public_key
                 )
 
         except Exception as e:
-            asyncio.sleep(2)
+            await asyncio.sleep(2)
     await helper_read()
 
 # -------------------------------------------
