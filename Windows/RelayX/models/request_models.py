@@ -4,3 +4,4 @@ class ConnectModel(BaseModel):
     recipient : str
 class SendModel(BaseModel):
     msg : str
+    recipient_onion : str

@@ -10,6 +10,7 @@ if WINDOWS_DIR not in sys.path:
 from RelayX.database.db import async_session
 from RelayX.database.models import User, Message
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
+from utilities.encryptdecrypt.encrypt_message import encrypt_message
 from RelayX.utils.keyring_manager import keyring_load_key
 
 # Users ------------------------------------------------------------------------------------------------
@@ -32,8 +33,8 @@ async def get_user(username):
 async def add_message(sender, recipient, message, msg_id):
     async with async_session() as session:
         async with session.begin():
-            # ensure msg_id stored as string (models define msg_id as String)
-            msg = Message(msg_id=str(msg_id), sender=sender, recipient=recipient, message=message)
+            encrypted_message = encrypt_message(key, message)
+            msg = Message(msg_id=str(msg_id), sender=sender, recipient=recipient, message=encrypted_message)
             session.add(msg)
 
 async def fetch_undelivered(recipient):
@@ -57,11 +58,11 @@ async def fetch_chat_history(user1, user2):
     chat_history = []
 
     for msg in messages:
-        #decrypted_text = decrypt_message(key, msg.message)
+        decrypted_text = decrypt_message(key, msg.message)
         chat_history.append({
             "From" : msg.sender,
             "To" : msg.recipient,
-            "msg" : msg.message,
+            "msg" : decrypted_text,
             "timestamp" : msg.TIMESTAMP
         })
     return chat_history
