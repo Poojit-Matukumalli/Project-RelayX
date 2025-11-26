@@ -3,7 +3,6 @@
 ![Python](https://img.shields.io/badge/Python-3.13.5-blue) 
 ![Flutter](https://img.shields.io/badge/Flutter-3.13.0-blue) 
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.105.0-lightblue) 
-![License](https://img.shields.io/badge/License-MIT-green)
 
 ***Built for Privacy, Funded by You.***
 
