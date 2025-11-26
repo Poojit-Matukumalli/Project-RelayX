@@ -1,4 +1,5 @@
 from sqlalchemy.future import select
+from sqlalchemy import text
 import os,sys, asyncio
 from time import time
 
@@ -28,10 +29,11 @@ async def get_user(username):
     
 # Messages -----------------------------------------------------------------------------------------------
 
-async def add_message(sender, recipient, message):
+async def add_message(sender, recipient, message, msg_id):
     async with async_session() as session:
         async with session.begin():
-            msg = Message(sender=sender, recipient=recipient, message=message)
+            # ensure msg_id stored as string (models define msg_id as String)
+            msg = Message(msg_id=str(msg_id), sender=sender, recipient=recipient, message=message)
             session.add(msg)
 
 async def fetch_undelivered(recipient):
@@ -55,15 +57,11 @@ async def fetch_chat_history(user1, user2):
     chat_history = []
 
     for msg in messages:
-        decrypted_text = decrypt_message(key, msg.message)
+        #decrypted_text = decrypt_message(key, msg.message)
         chat_history.append({
             "From" : msg.sender,
             "To" : msg.recipient,
-            "msg" : decrypted_text,
+            "msg" : msg.message,
             "timestamp" : msg.TIMESTAMP
         })
     return chat_history
-async def func():
-    await add_user("A", "4q2ntnuaa33icqi6k7inxwg3jqyphkv75btaa5xav5hcid.onion", "a@dummy")
-
-asyncio.run(func())

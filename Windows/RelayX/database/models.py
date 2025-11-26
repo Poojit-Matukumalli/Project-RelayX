@@ -14,6 +14,7 @@ class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    msg_id = Column(String, nullable=False)
     sender = Column(String, nullable=False)
     recipient = Column(String, nullable=False)
     message = Column(String, nullable=False)

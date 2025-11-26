@@ -16,6 +16,23 @@ Ack_timeout = 3
 Max_retries = 5
 user_onion = load_onion()
 
+async def send_with_ack(recipient_onion, payload_env, timeout=3, retries = 3):
+    global PROXY
+    msg_id = str(uuid.uuid4())
+    payload_env["msg_id"] = msg_id
+    payload_env["is_ack"] = False
+
+    for attempt in range(retries):
+        ok = await send_via_tor(recipient_onion, 5050, payload_env,PROXY)
+        if not ok:
+            continue
+        try:
+            ack = await asyncio.wait_for(ack_queue.get(), timeout=timeout)
+            if ack.get("msg_id") == msg_id:
+                return True
+        except asyncio.TimeoutError:
+            return "Retrying.."
+    return False
 
 async def handle_incoming(reader, writer):
     global session_key, user_onion, PROXY
@@ -41,7 +58,7 @@ async def handle_incoming(reader, writer):
                 "is_ack": True,
             }
             route = envelope.get("from")
-            asyncio.create_task(send_via_tor(route, 5050, ack_env, PROXY))
+            asyncio.create_task(send_with_ack(route, ack_env))
 
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
@@ -59,21 +76,3 @@ async def inbound_listener():
     print(f"[LISTENER] Active on 127.0.0.1:{listen_port}")
     async with server:
         await server.serve_forever()
-
-async def send_with_ack(recipient_onion, payload_env, timeout=3, retries = 3):
-    global PROXY
-    msg_id = str(uuid.uuid4())
-    payload_env["msg_id"] = msg_id
-    payload_env["is_ack"] = False
-
-    for attempt in range(retries):
-        ok = await send_via_tor(recipient_onion, 5050, payload_env,PROXY)
-        if not ok:
-            continue
-        try:
-            ack = await asyncio.wait_for(ack_queue.get(), timeout=timeout)
-            if ack.get("msg_id") == msg_id:
-                return True
-        except asyncio.TimeoutError:
-            return "Retrying.."
-    return False
