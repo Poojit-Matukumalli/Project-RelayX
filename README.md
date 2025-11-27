@@ -1,9 +1,5 @@
 ## - Project RelayX -
 
-![Python](https://img.shields.io/badge/Python-3.13.5-blue) 
-![Flutter](https://img.shields.io/badge/Flutter-3.13.0-blue) 
-![FastAPI](https://img.shields.io/badge/FastAPI-0.105.0-lightblue) 
-
 ***Built for Privacy, Funded by You.***
 
 If you are interested in setting up a RelayX of your own, check out [SETUP.md](SETUP.md)
@@ -53,15 +49,10 @@ Key highlights:
 
 ### Developer Setup
 ```bash
-git clone https://github.com/yourusername/RelayX.git
-```
-```
-cd RelayX
-```
-```
+git clone https://github.com/Poojit-Matukumalli/Project-RelayX.git &&
+cd Project-RelayX &&
 pip install -r requirements.txt
 ```
-Currently, the app does not support macOS because of backend daemon issues. I'm trying to bring it to mac soon.
 ```
 flutter build windows (or) linux
 ```
@@ -69,7 +60,7 @@ Run backend and frontend separately :
 ```
 python backend/main.py run
 ```
- ```
+```
 flutter run
 ```
 
@@ -107,9 +98,10 @@ We welcome contributions! Guidelines:
 
 📬 Contact
 
-Created by Sparrow
+Created by Poojit Matukumalli.
+
 Reach out via email or open an issue on GitHub.
 If Emailing about any issues, Please summarize the issue in 10 words or less in the Subject line.
-Anyone can reach out casually, Thanks for using Project RelayX.
+Anyone can reach out casually if they want, Thanks for using Project RelayX.
 
 Email : projectrelayx@gmail.com
