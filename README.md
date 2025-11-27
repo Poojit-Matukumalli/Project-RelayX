@@ -95,8 +95,13 @@ We welcome contributions! Guidelines:
 4. Submit pull requests or open issues for bug reports/features.
 
 ---
+## License :
 
-📬 Contact
+Project RelayX is licensed under the custom **RelayX Non-Commercial License**.
+
+For full terms, see [LICENSE.md](LICENSE.md).
+
+##📬 Contact
 
 Created by Poojit Matukumalli.
 
