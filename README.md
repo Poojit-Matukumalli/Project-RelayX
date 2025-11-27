@@ -40,7 +40,7 @@ Key highlights:
 
 ---
 
-## 🛠 Installation
+## Installation
 
 ### Pre-built Installer (Recommended)
 1. Download the latest installer for your OS.  
@@ -101,7 +101,7 @@ Project RelayX is licensed under the custom **RelayX Non-Commercial License**.
 
 For full terms, see [LICENSE.md](LICENSE.md).
 
-##📬 Contact
+## 📬 Contact
 
 Created by Poojit Matukumalli.
 
