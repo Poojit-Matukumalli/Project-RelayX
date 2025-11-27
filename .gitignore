@@ -11,5 +11,3 @@ geoip
 geoip6
 
 *.pem
-#
-*.db
