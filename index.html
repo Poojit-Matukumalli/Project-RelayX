@@ -339,7 +339,7 @@
         if (recommendedDownload) {
             buttonHtml = `
                 <a href="${recommendedDownload.href}" download="${recommendedDownload.file}"
-                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl ${recommendedDownload.bgColor} ${recommendedDownload.hoverColor} ${recommendedDownload.glowClass} w-full max-w-sm">
+                   class="flex items-center justify-center space-x-2 px-4 py-8 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl ${recommendedDownload.bgColor} ${recommendedDownload.hoverColor} ${recommendedDownload.glowClass} w-full max-w-sm">
                     <span class="text-xl">${recommendedDownload.icon}</span>
                     <span class="text-x1">Download for ${recommendedDownload.os}</span>
                 </a>
@@ -348,7 +348,7 @@
         } else {
             buttonHtml = `
                 <a href="#" 
-                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl bg-gray-500 hover:bg-gray-600 w-full max-w-sm">
+                   class="flex items-center justify-center space-x-2 px-4 py-8 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl bg-gray-500 hover:bg-gray-600 w-full max-w-sm">
                     <span class="text-xl">Download for Other Platforms</span>
                 </a>
             `;
