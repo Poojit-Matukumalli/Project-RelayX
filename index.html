@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msvalidate.01" content="ACEA07EA8315E8DD9C0BAECB3B3418C9" />
     <title>Project RelayX - Built for Privacy</title>
+    <meta name="description" content="Project RelayX is a privacy-focused messaging application that prioritizes end-to-end encryption, decentralization, and user-funded development.">
+    <meta name="keywords" content="Project RelayX, Privacy, Messaging, End to End Encryption, Decentralized, Open Source, Secure Communication, p2p, tor, python, flutter, non-profit, donations, secure chat, privacy app, encrypted messaging">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <!-- Google tag  -->
@@ -83,12 +86,14 @@
 
     <!-- Hero Bar --><header class="p-4 md:p-6 border-b border-gray-800 shadow-lg">
         <div class="flex justify-between items-center max-w-7xl mx-auto">
-            <h1 class="text-2xl font-bold text-white tracking-wider">
+            <img src="https://i.postimg.cc/T1NStg9g/IMG-20251127-214325.jpg"
+                    class="h-16 w-16 logo-hover rounded-full shadow-lg transition duration-300 transform hover:border-accent hover:scale-110 team-card-hover max-w-sm"" alt="Project-RelayX Logo">
+            <h1 class="text-2xl font-bold text-white text-left ml-4 flex-grow">
                 Project RelayX
             </h1>
             <nav>
                 <a href="#features" class="text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Features</a>
-                <a href="#footer" class="ml-6 text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Footer (placeholder)</a>
+                <a href="#footer" class="ml-6 text-gray-400 hover:text-relay-primary transition duration-300 rounded-lg p-2 md:p-3">Donate</a>
             </nav>
         </div>
     </header>
@@ -126,7 +131,7 @@
             </div>
             <p class="text-gray-600 mt-4 text-xs">Project Repository maintained under My GitHub account.</p>
             
-            <!-- Download Buttons Section --><div class="mt-12 border-t border-gray-800 pt-8">
+            <!-- Download Buttons Section --><div class="mt-12 border-t border-gray-800 pt-6">
                 <h3 class="text-2xl font-semibold text-white mb-6">Download Project RelayX</h3>
                 <div id="download-buttons" class="flex justify-center">
                     <!-- Button by JavaScript here --></div>
@@ -278,22 +283,46 @@
         </section>
 
 <!-- Footer -->
-    <footer id="footer" class="bg-card p-6 mt-12 border-t border-gray-700">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-center items-center text-sm text-gray-500 space-y-4 md:space-y-0">
-            <div class="flex items-center space-x-2 mr-6">
-                <img src=""
-                    class="h-16 w-16 logo-hover rounded-full">
-                <span class="text-xs text-gray-400">© 2025 Project-RelayX. All rights reserved. | Secured by <span class="text-relay-primary">End-to-End Encryption</span>
+    <footer id="footer" class="bg-card p-8 mt-12 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-sm text-gray-400">
+
+            <!-- Logo + Rights -->
+            <div class="flex items-center space-x-3">
+                <img src="https://i.postimg.cc/T1NStg9g/IMG-20251127-214325.jpg"
+                     class="h-14 w-14 rounded-xl shadow-md transition duration-300 transform hover:scale-110"
+                     alt="Project RelayX Logo">
+
+                <p class="leading-relaxed">
+                    © 2025 <span class="text-white font-semibold">Project RelayX</span><br>
+                    Secured by <span class="text-relay-primary font-medium">End-to-End Encryption</span>
+                </p>
             </div>
 
-            <div class="text-center md:text-left">
-                <h4 class="font-semibold text-white mb-1">License:</h4>
-                <p>Released under the <span class="text-accent font-semibold">Custom RNCL License</span>.</p>
-                <a href="https://github.com/Poojit-Matukumalli/Project-RelayX" class="text-relay-primary hover:underline">View License on GitHub</a>
+            <!-- License + Donate -->
+            <div class="text-center md:text-right">
+                <a href="https://github.com/Poojit-Matukumalli/Project-RelayX"
+                    class="text-relay-primary hover:underline block">
+                    <span class="text-relay-primary">RNCL License</span>
+                </a>
+
+                <p>
+                <a class="text-relay-primary hover:underline block" href="mailto:projectrelayx@gmail.com">
+                    Email : projectrelayx@gmail.com
+                </a>
+                </p>
+
+                <!-- Donate section (matching the style) -->
+                <a href="#"
+                    class="text-relay-primary hover:underline mt-1 block">
+                    Support the Project (Donate)
+                </a>
             </div>
+
         </div>
-        <div class="text-center text-xs text-gray-600 mt-8 pt-4 border-t border-gray-800">
-            Poojit Matukumalli &copy; 2025 Project RelayX .
+
+        <!-- Bottom strip -->
+        <div class="text-center text-xs text-gray-600 mt-10 pt-4 border-t border-gray-800">
+            Poojit Matukumalli &copy; 2025 Project RelayX
         </div>
     </footer>
     <script>
@@ -320,9 +349,9 @@
         const userAgent = navigator.userAgent;
 
         const downloads = [
-            { os: 'Windows', icon: '&#x1F4BB;', glowClass: 'glow-blue', href: '#', file: 'RelayX-setup.exe', bgColor: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700' },
-            { os: 'Android', icon: '&#x1F4F1;', glowClass: 'glow-green', href: '#', file: 'RelayX.apk', bgColor: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
-            { os: 'Linux', icon: '&#x1F47B;', glowClass: 'glow-orange', href: '#', file: 'RelayX.AppImage', bgColor: 'bg-orange-600', hoverColor: 'hover:bg-orange-700' },
+            { os: 'Windows', icon: '💻', glowClass: 'glow-blue', href: '#', file: 'RelayX-setup.exe', bgColor: 'bg-indigo-600', hoverColor: 'hover:bg-indigo-700' },
+            { os: 'Android', icon: '📱', glowClass: 'glow-green', href: '#', file: 'RelayX.apk', bgColor: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
+            { os: 'Linux', icon: '🐧', glowClass: 'glow-orange', href: '#', file: 'RelayX.AppImage', bgColor: 'bg-orange-600', hoverColor: 'hover:bg-orange-700' },
         ];
         //OS detectiom
         function detectOS() {
@@ -337,7 +366,7 @@
         if (recommendedDownload) {
             buttonHtml = `
                 <a href="${recommendedDownload.href}" download="${recommendedDownload.file}"
-                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl ${recommendedDownload.bgColor} ${recommendedDownload.hoverColor} ${recommendedDownload.glowClass} w-full max-w-sm">
+                   class="flex items-center justify-center space-x-2 px-12 py-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl ${recommendedDownload.bgColor} ${recommendedDownload.hoverColor} ${recommendedDownload.glowClass} w-auto">
                     <span class="text-xl">${recommendedDownload.icon}</span>
                     <span class="text-x1">Download for ${recommendedDownload.os}</span>
                 </a>
@@ -346,7 +375,7 @@
         } else {
             buttonHtml = `
                 <a href="#" 
-                   class="flex items-center justify-center space-x-2 p-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl bg-gray-500 hover:bg-gray-600 w-full max-w-sm">
+                   class="flex items-center justify-center space-x-2 px-12 py-5 rounded-xl font-extrabold text-white transition duration-300 transform hover:scale-105 shadow-2xl bg-gray-500 hover:bg-gray-600 w-auto">
                     <span class="text-xl">Download for Other Platforms</span>
                 </a>
             `;
