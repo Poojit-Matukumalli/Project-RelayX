@@ -5,3 +5,5 @@ class ConnectModel(BaseModel):
 class SendModel(BaseModel):
     msg : str
     recipient_onion : str
+class ContactFetch(BaseModel):
+    username : str

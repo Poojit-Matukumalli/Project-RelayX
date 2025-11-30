@@ -19,7 +19,7 @@ This project uses the open-source components included in the Tor Expert Bundle :
 3. Conjure
 
 All copyright and license notices from these components are retained as required.
-All the licenses are in RelayX\Project_RelayX\network\Networking\docs as intended.
+All the licenses are in Project-RelayX/Windows/Networking/docs as intended.
 ## Notice :
 
 We do not claim any affiliation or Endorsement with the organization(s) mentioned above.
