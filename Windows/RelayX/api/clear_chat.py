@@ -11,5 +11,5 @@ async def clear_chat(user1, user2):
         async with session.begin():
             await session.execute(delete(Message).where(
             ((Message.sender == user1) & (Message.recipient == user2)) | 
-            ((Message.sender == user2) & (Message.recipient == user1))).order_by(Message.TIMESTAMP)) # type: ignore
+            ((Message.sender == user2) & (Message.recipient == user1)))) # type: ignore
     return {"status" : "Chat Cleared"}

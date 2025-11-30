@@ -1,7 +1,6 @@
 import subprocess
 import time
 import os
-import sys
 import platform
 
 
@@ -13,7 +12,7 @@ def base_networking_dir():
 ROOT_DIR = base_networking_dir()
 DATA_DIR = os.path.join(ROOT_DIR, "data", "tor_necessities")
 HS_DIR = os.path.join(ROOT_DIR, "data", "HiddenService")
-
+hostname_dir = os.path.join(HS_DIR, "hostname")
 
 if platform.system() == "Windows":
     TOR_EXE = os.path.join(ROOT_DIR, "tor", "tor.exe")
@@ -27,6 +26,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 if not os.path.isfile(TOR_EXE):
     raise FileNotFoundError(f"Tor executable not found: {TOR_EXE}")
 
+
 proc = subprocess.Popen(
     [
         TOR_EXE,
@@ -39,14 +39,13 @@ proc = subprocess.Popen(
     text=True
     )
 
-try:
-    with open(os.path.join(HS_DIR, "hostname")) as f:
-        onion = f.read() 
-finally:
-    try:
+timeout = 30
+start = time.time()
+while not os.path.exists(hostname_dir):
+    if time.time() - start > timeout:
         proc.terminate()
-    except Exception:
-        pass
-    except Exception as e:
-        print(f"Error starting Tor hidden service: {e}")
-        sys.exit(1)
+        time.sleep(0.5)
+
+with open(hostname_dir, "r") as f:
+    onion = f.read().strip()
+proc.terminate()

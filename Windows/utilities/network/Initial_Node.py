@@ -21,13 +21,10 @@ if WINDOWS_DIR not in sys.path:
     sys.path.insert(0, WINDOWS_DIR)
 
 from RelayX.database.crud import add_user
+from RelayX.utils.config import user_onion
 # =================================== Configuration =======================================================================
 
 details_json = os.path.join("Windows","utilities","network","details.json")
-
-hostname_path = os.path.join("Windows","Networking","data","HiddenService","hostname")
-with open(hostname_path, "r") as f:
-    user_onion = f.read()
 Service_Name = "RelayX"
 key_name = "sign_key"
 # -----------------------------------------------------------------------------------------------------------

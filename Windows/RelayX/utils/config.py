@@ -1,4 +1,5 @@
-import os, json
+import os, json, asyncio
+from RelayX.core.onion_loader import load_onion
 
 ROTATE_INTERVAL = 600
 ROTATE_AFTER_MESSAGES = 25
@@ -13,3 +14,5 @@ with open(details_json, "r") as f:
     Username = data["Username"]
 
 username = Username
+
+user_onion = asyncio.run(load_onion())

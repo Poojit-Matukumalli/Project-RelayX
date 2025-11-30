@@ -5,16 +5,15 @@ if WINDOWS_DIR not in sys.path:
     sys.path.insert(0, WINDOWS_DIR)
 
 from RelayX.utils.queue import incoming_queue, ack_queue
-from rotator import session_key
+from RelayX.core.rotator import session_key
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
-from utils.config import LISTEN_PORT, PROXY
+from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor
-from onion_loader import load_onion
+from RelayX.core.onion_loader import load_onion
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
 Max_retries = 5
-user_onion = load_onion()
 
 async def send_with_ack(recipient_onion, payload_env, timeout=3, retries = 3):
     global PROXY

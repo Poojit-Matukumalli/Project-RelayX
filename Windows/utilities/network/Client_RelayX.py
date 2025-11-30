@@ -7,24 +7,18 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys
-
+import os, time, sys, asyncio
 # ============================== Dynamic imports =======================================================================
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from encryptdecrypt.encrypt_message import encrypt_message
+from utilities.encryptdecrypt.encrypt_message import encrypt_message
 from encryptdecrypt.decrypt_message import decrypt_message
 from Keys.public_key_private_key.generate_keys import handshake_responder
-
-# =================== User onion configuration =========================================================================
-
-addr_file = os.path.join("Windows","Networking", "data", "HiddenService","hostname")
-with open(addr_file, "r") as f:
-    addr_user_onion = f.read()
-user_onion = addr_user_onion
+from RelayX.core.onion_loader import load_onion
+from RelayX.utils.config import user_onion
 
 # ========================= Helpers ====================================================================================
  
