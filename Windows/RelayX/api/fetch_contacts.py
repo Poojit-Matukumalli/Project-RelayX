@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 import os, sys
 
-WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if WINDOWS_DIR not in sys.path:
-    sys.path.insert(0, WINDOWS_DIR)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 
 
 from RelayX.models.request_models import ContactFetch
@@ -13,5 +13,5 @@ router = APIRouter()
 
 @router.post("/contacts")
 async def get_contacts(model : ContactFetch):
-    contacts = await fetch_contacts(model.username)
+    contacts = await fetch_contacts(model.user_onion)
     return contacts

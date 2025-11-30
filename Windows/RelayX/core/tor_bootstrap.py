@@ -8,4 +8,3 @@ def start_tor():
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
-start_tor()

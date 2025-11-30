@@ -16,21 +16,20 @@ from cryptography.hazmat.primitives.asymmetric import ed25519 ; from cryptograph
 import keyring
 # =============================== Dynamic imports ======================================================================
 
-WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if WINDOWS_DIR not in sys.path:
-    sys.path.insert(0, WINDOWS_DIR)
-
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 from RelayX.database.crud import add_user
 from RelayX.utils.config import user_onion
 # =================================== Configuration =======================================================================
 
-details_json = os.path.join("Windows","utilities","network","details.json")
+details_json = os.path.join(PROJECT_ROOT, "utilities", "network", "details.json")
 Service_Name = "RelayX"
 key_name = "sign_key"
 # -----------------------------------------------------------------------------------------------------------
 
 def details_helper(parameter, mode):
-    return json.load(open(os.path.join("Windows","utilities","network","details.json"), mode))[f"{parameter}"]
+    return json.load(open(os.path.abspath(details_json), mode))[f"{parameter}"]
 
 def create_priv_key():
     private_key = ed25519.Ed25519PrivateKey.generate()

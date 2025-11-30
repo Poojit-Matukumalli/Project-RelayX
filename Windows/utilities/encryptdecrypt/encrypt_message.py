@@ -10,11 +10,11 @@ import hashlib
 
 # =============================== Dynamic imports ======================================================================
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DIR not in sys.path:
-    sys.path.insert(0, ROOT_DIR)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 
-from encryptdecrypt.shield_crypto import shield_encrypt, derive_shield_key
+from utilities.encryptdecrypt.shield_crypto import shield_encrypt, derive_shield_key
 
 # =================================== Functions =======================================================================
 

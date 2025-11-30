@@ -1,8 +1,8 @@
 import asyncio, json, sys, os, uuid
 
-WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if WINDOWS_DIR not in sys.path:
-    sys.path.insert(0, WINDOWS_DIR)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import incoming_queue, ack_queue
 from RelayX.core.rotator import session_key
@@ -71,7 +71,7 @@ async def handle_incoming(reader, writer):
     finally:
         writer.close()
         await writer.wait_closed()
-async def inbound_listener(recipient):
+async def inbound_listener():
     global listen_port
     server = await asyncio.start_server(handle_incoming, "127.0.0.1", listen_port)
     print(f"[LISTENER] Active on 127.0.0.1:{listen_port}")

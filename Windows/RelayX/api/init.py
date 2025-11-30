@@ -1,22 +1,23 @@
 from fastapi import APIRouter   ;   import sys, os
 
-WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if WINDOWS_DIR not in sys.path:
-    sys.path.insert(0, WINDOWS_DIR)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 
-
+from RelayX.database.models import init_db
 from RelayX.core.inbound import inbound_listener
 from RelayX.core.tor_bootstrap import start_tor
-from RelayX.core.onion_loader import load_onion
+from RelayX.utils.config import user_onion
 import asyncio
 
 router = APIRouter()
 
 @router.post("/init")
 async def init_backend():
+    global user_onion
     start_tor()
-    user_onion = await load_onion()
     if not user_onion:
-        return {"Error" : "Networking Identity not found"}
+            return {"Error" : "Networking Identity not found"}
+    await init_db()
     asyncio.create_task(inbound_listener())
     return {"Status" : "Initialized"}

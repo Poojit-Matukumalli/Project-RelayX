@@ -1,11 +1,10 @@
 from fastapi import APIRouter ; import sys, os
 
-WINDOWS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if WINDOWS_DIR not in sys.path:
-    sys.path.insert(0, WINDOWS_DIR)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import incoming_queue
-
 
 router = APIRouter()
 

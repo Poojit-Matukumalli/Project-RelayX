@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
 class ConnectModel(BaseModel):
-    recipient : str
+    recipient_onion : str
 class SendModel(BaseModel):
     msg : str
     recipient_onion : str
 class ContactFetch(BaseModel):
-    username : str
+    user_onion : str
