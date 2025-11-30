@@ -9,7 +9,7 @@ from RelayX.core.rotator import session_key
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor
-from RelayX.core.onion_loader import load_onion
+from RelayX.database.crud import add_message
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
@@ -30,7 +30,7 @@ async def send_with_ack(recipient_onion, payload_env, timeout=3, retries = 3):
             if ack.get("msg_id") == msg_id:
                 return True
         except asyncio.TimeoutError:
-            return "Retrying.."
+            print("Retrying..")
     return False
 
 async def handle_incoming(reader, writer):
@@ -46,6 +46,8 @@ async def handle_incoming(reader, writer):
                 print(f"[ACK RECEIVED] msg_id={envelope.get('msg_id')}")
                 return
             decrypted = decrypt_message(session_key, envelope.get("payload", ""))
+            recipient_onion = envelope.get("from")
+            await add_message(user_onion, recipient_onion, decrypted)
             await incoming_queue.put({"msg": decrypted})
 
             print(f"\n[INCOMING MESSAGE]\nFrom: {envelope.get('from')}\nMsg: {decrypted}\n")
@@ -69,7 +71,7 @@ async def handle_incoming(reader, writer):
     finally:
         writer.close()
         await writer.wait_closed()
-async def inbound_listener():
+async def inbound_listener(recipient):
     global listen_port
     server = await asyncio.start_server(handle_incoming, "127.0.0.1", listen_port)
     print(f"[LISTENER] Active on 127.0.0.1:{listen_port}")
