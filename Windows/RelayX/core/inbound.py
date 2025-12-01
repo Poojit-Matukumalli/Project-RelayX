@@ -5,11 +5,12 @@ PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import incoming_queue, ack_queue
-from RelayX.core.rotator import session_key
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor
 from RelayX.database.crud import add_message
+from Keys.public_key_private_key.generate_keys import handshake_responder
+from RelayX.utils import config
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
@@ -34,19 +35,21 @@ async def send_with_ack(recipient_onion, payload_env, timeout=3, retries = 3):
     return False
 
 async def handle_incoming(reader, writer):
-    global session_key, user_onion, PROXY
+    global user_onion, PROXY
     try:
         data = await reader.read(8192)
         msg_raw = data.decode()
 
         try:
             envelope = json.loads(msg_raw)
+            if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
+                await handshake_responder(envelope, user_onion, send_via_tor)
             if envelope.get("is_ack"):
                 await ack_queue.put(envelope)
                 print(f"[ACK RECEIVED] msg_id={envelope.get('msg_id')}")
                 return
-            decrypted = decrypt_message(session_key, envelope.get("payload", ""))
             recipient_onion = envelope.get("from")
+            decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
             await add_message(user_onion, recipient_onion, decrypted)
             await incoming_queue.put({"msg": decrypted})
 

@@ -22,7 +22,7 @@ from RelayX.utils.config import user_onion
 # ========================= Helpers ====================================================================================
  
 def load_active_relays():       # Loads active relays... Duh
-    relay_file = os.path.join("Windows","utilities", "network", "relay_list.json")
+    relay_file = os.path.join(PROJECT_ROOT,"utilities", "network", "relay_list.json")
     try:
         with open(relay_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -123,18 +123,3 @@ async def relay_send(message ,user_onion, recipient_onion, show_route=True):
     except Exception as e:
         print(f"[ERR] Relay send failed: {e}")
             
-# Helper. Listener & Incoming --------------------------------------------------------------------------------------------  
-
-async def handle_handshake_key(reader, writer):
-    try:
-        data = await reader.read(8192)
-        envelope = json.loads(data.decode())
-        session_key = await handshake_responder(envelope, user_onion, send_via_tor)
-        return session_key
-    except Exception as e:
-        print(f"[ERR] Handshake handler crashed: {e}")
-    finally:
-        writer.close()
-        await writer.wait_closed()
-
-# ---------------------------------------------------

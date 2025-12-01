@@ -15,9 +15,9 @@ router = APIRouter()
 @router.post("/init")
 async def init_backend():
     global user_onion
-    start_tor()
     if not user_onion:
             return {"Error" : "Networking Identity not found"}
+    start_tor()
     await init_db()
     asyncio.create_task(inbound_listener())
     return {"Status" : "Initialized"}

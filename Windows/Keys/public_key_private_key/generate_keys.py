@@ -1,11 +1,19 @@
 # ============================================== Imports ===================================================================
 
-import base64, os, time, asyncio
+
+
+import base64, os, time, asyncio, sys
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+sys.path.insert(0, PROJECT_ROOT)
+
+
+from RelayX.utils import config
 # ---------------- Pending handshakes ---------------------------------------------
 
 pending_handshakes = {} # Dict{str, Tuple(X25519PrivateKey, bytes, asyncio.Future)}
@@ -88,8 +96,8 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, pr
         peer_pub_bytes = b64_decode(resp["pub"])
         nonce_b = b64_decode(resp["nonce_b"])
         shared_key = derive_shared_key(my_private, peer_pub_bytes)
-        session_key = derive_session_key(shared_key, nonce_a, nonce_b)
-        return session_key
+        config.session_key[peer_onion] = derive_session_key(shared_key, nonce_a, nonce_b)
+        return config.session_key[peer_onion]
     except asyncio.TimeoutError:
         return None
     finally:
@@ -112,8 +120,8 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, pro
         await send_via_tor(peer, 5050, resp_msg, proxy=proxy)
 
         shared_key = derive_shared_key(my_private, peer_public)
-        session_key = derive_session_key(shared_key, nonce_a, nonce_b)
-        return session_key
+        config.session_key[peer] = derive_session_key(shared_key, nonce_a, nonce_b)
+        return config.session_key[peer]
     elif type == "HANDSHAKE_RESP":
         if peer in pending_handshakes:
             _, _, future = pending_handshakes[peer]

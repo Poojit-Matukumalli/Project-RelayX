@@ -11,20 +11,18 @@ from utilities.network.Client_RelayX import send_via_tor
 from RelayX.core.handshake import do_handshake
 from RelayX.core.rotator import ensure_rotation_started
 from RelayX.utils.config import user_onion
+from RelayX.utils import config
 router = APIRouter()
-
-recipient_onion = None
-session_key = None
 
 @router.post("/connect")
 async def connect(model : ConnectModel):
-    global recipient_onion, session_key, user_onion
+    global recipient_onion, user_onion
     recipient_onion = model.recipient_onion
     ok = await verify_connection(recipient_onion)
     if not ok:
         return {"status" : "Offline"}
-    session_key = await do_handshake(user_onion, recipient_onion, send_via_tor)
-    if not session_key:
+    config.session_key[recipient_onion] = await do_handshake(user_onion, recipient_onion, send_via_tor)
+    if not config.session_key[recipient_onion]:
         return {"status" : "Handshake failed"}
     await ensure_rotation_started()
     return {

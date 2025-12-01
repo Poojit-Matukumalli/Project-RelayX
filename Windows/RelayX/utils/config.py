@@ -14,6 +14,7 @@ ROTATE_AFTER_MESSAGES = 25
 LISTEN_PORT = 5050
 PROXY = ("127.0.0.1", 5050)
 message_count = 0
+session_key = {}
 
 # Paths & onion -----------
 tor_path = os.path.abspath(os.path.join("Windows", "Networking", "tor", "tor.exe" ))

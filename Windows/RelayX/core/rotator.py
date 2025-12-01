@@ -7,8 +7,8 @@ sys.path.insert(0, PROJECT_ROOT)
 from Keys.public_key_private_key.generate_keys import handshake_initiator
 from RelayX.utils.queue import rotation_lock, rotation_started
 from RelayX.utils.config import ROTATE_INTERVAL
+from RelayX.utils import config
 
-session_key = None
 last_rotate_time = time()
 
 async def ensure_rotation_started():
@@ -24,14 +24,14 @@ async def auto_rotation_monitor(user_onion, peer_onion, send_via_tor):
     """
     Background thread to automatically rotate keys every ROTATE_INTERVAL seconds.
     """
-    global session_key, last_rotate_time, recipient_onion
+    global last_rotate_time, recipient_onion
     while True:
         try:
             if not recipient_onion:
                 await asyncio.sleep(5)
                 continue
             if time() - last_rotate_time >= ROTATE_INTERVAL:
-                session_key = await key_rotation(user_onion,peer_onion, send_via_tor, handshake_initiator)
+                config.session_key[peer_onion] = await key_rotation(user_onion,peer_onion, send_via_tor, handshake_initiator)
                 last_rotate_time = time()
             asyncio.sleep(30)
         except Exception as e:
