@@ -7,7 +7,7 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys, asyncio
+import os, time, sys, uuid
 # ============================== Dynamic imports =======================================================================
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -103,6 +103,7 @@ async def relay_send(message ,user_onion, recipient_onion, show_route=True):
 
         envelope = {
             "route": route.copy(),
+            "msg_id" : str(uuid.uuid4()),
             "payload": message,
             "from": user_onion,
             "to": recipient_onion,
@@ -122,4 +123,3 @@ async def relay_send(message ,user_onion, recipient_onion, show_route=True):
 
     except Exception as e:
         print(f"[ERR] Relay send failed: {e}")
-            

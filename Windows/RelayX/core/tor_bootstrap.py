@@ -5,8 +5,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 
 def start_tor():
     tor_path = os.path.join(PROJECT_ROOT,"Networking", "tor", "tor.exe")
-    subprocess.Popen([
-        tor_path],
+    torrc_path = os.path.join(PROJECT_ROOT, "Networking", "tor", "torrc")
+    subprocess.Popen([tor_path, "-f", torrc_path],
         creationflags= subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
