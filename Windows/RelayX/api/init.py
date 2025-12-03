@@ -8,7 +8,7 @@ from RelayX.database.models import init_db
 from RelayX.core.inbound import inbound_listener
 from RelayX.core.tor_bootstrap import start_tor
 from RelayX.utils.config import user_onion
-import asyncio
+import asyncio, os
 
 router = APIRouter()
 
@@ -17,6 +17,7 @@ async def init_backend():
     global user_onion
     if not user_onion:
             return {"Error" : "Networking Identity not found"}
+    os.chdir(PROJECT_ROOT)
     start_tor()
     await init_db()
     asyncio.create_task(inbound_listener())

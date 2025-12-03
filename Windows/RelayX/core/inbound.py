@@ -49,8 +49,9 @@ async def handle_incoming(reader, writer):
                 print(f"[ACK RECEIVED] msg_id={envelope.get('msg_id')}")
                 return
             recipient_onion = envelope.get("from")
+            msg_id = envelope.get("msg_id")
             decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
-            await add_message(user_onion, recipient_onion, decrypted)
+            await add_message(user_onion, recipient_onion, decrypted, msg_id)
             await incoming_queue.put({"msg": decrypted})
 
             print(f"\n[INCOMING MESSAGE]\nFrom: {envelope.get('from')}\nMsg: {decrypted}\n")
@@ -61,8 +62,7 @@ async def handle_incoming(reader, writer):
                 "stap": envelope.get("stap"),
                 "is_ack": True,
             }
-            route = envelope.get("from")
-            asyncio.create_task(send_with_ack(route, ack_env))
+            asyncio.create_task(send_with_ack(recipient_onion, ack_env))
 
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
