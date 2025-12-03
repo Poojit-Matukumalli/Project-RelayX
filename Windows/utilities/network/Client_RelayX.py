@@ -7,7 +7,7 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys, uuid
+import os, time, sys, uuid, asyncio
 # ============================== Dynamic imports =======================================================================
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -79,6 +79,7 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
         )
         writer.write(json.dumps(envelope).encode())
         await writer.drain()
+        await asyncio.sleep(0.05)
         writer.close()
         await writer.wait_closed()
         print(f"[OK] Envelope sent → {onion_route}:{port}")
@@ -87,7 +88,7 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
 
 # Helper, Accessed in the executor script --------------------------------------------------------------------------------
 
-async def relay_send(message ,user_onion, recipient_onion, show_route=True):
+async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=True):
     try:
         active_relays = load_active_relays()
         if not active_relays:
@@ -100,16 +101,16 @@ async def relay_send(message ,user_onion, recipient_onion, show_route=True):
         route = [user_onion] + route_relays + [recipient_onion]
         if show_route:
             print(f"[ROUTE] {' → '.join(route)}")
-
         envelope = {
             "route": route.copy(),
-            "msg_id" : str(uuid.uuid4()),
+            "msg_id" : msg_uuid,
             "payload": message,
             "from": user_onion,
             "to": recipient_onion,
             "stap": time.time(),
             "type": "msg"
         }
+
 
         # Pop the user address to avoid looping
         route.pop(0)
