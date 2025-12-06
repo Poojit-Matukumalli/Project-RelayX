@@ -19,13 +19,8 @@ Max_retries = 5
 async def handle_incoming(reader, writer):
     global user_onion, PROXY
     try:
-        chunks = []
-        while True:
-            part = await reader.read(4096)
-            if not part:
-                break
-            chunks.append(part)
-        msg_raw = b"".join(chunks).decode()
+        data = await asyncio.wait_for(reader.readline(), timeout=5.0)
+        msg_raw = data.decode().strip()
         try:
             envelope = json.loads(msg_raw)
             if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:

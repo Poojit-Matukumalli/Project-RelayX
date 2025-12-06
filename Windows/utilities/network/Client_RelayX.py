@@ -49,7 +49,7 @@ sys_rand = random.SystemRandom()
 
 # Route builder (Helper)--------------------------------------------------------------------------------------------------
 
-async def build_route(active_relays, min_hops=2, max_hops=2):
+async def build_route(active_relays, min_hops=1, max_hops=1):
     if not active_relays:
         return []
     shuffled_list = active_relays.copy()
@@ -77,11 +77,12 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
             host=onion_route,
             port=port
         )
-        writer.write(json.dumps(envelope).encode())
+        writer.write((json.dumps(envelope) + "\n").encode())
         await writer.drain()
         await asyncio.sleep(0.05)
         writer.close()
         await writer.wait_closed()
+        print(onion_route)
         print(f"[OK] Envelope sent → {onion_route}:{port}")
     except Exception as e:
         print(f"[FAIL] Transmission error → {onion_route}:{port} | {e}")
@@ -95,10 +96,10 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
             print("[ERR] No active relays found.")
             return
 
-        route_relays = await build_route(active_relays, min_hops=2, max_hops=2)
+        route_relays = await build_route(active_relays, min_hops=1, max_hops=1)
 
         # route (user → relays → destination)
-        route = [user_onion] + route_relays + [recipient_onion]
+        route = [f"{user_onion}:5050"] + route_relays + [f"{recipient_onion}:5050"]
         if show_route:
             print(f"[ROUTE] {' → '.join(route)}")
         envelope = {
