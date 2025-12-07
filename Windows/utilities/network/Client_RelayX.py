@@ -102,6 +102,10 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
         route = [f"{user_onion}:5050"] + route_relays + [f"{recipient_onion}:5050"]
         if show_route:
             print(f"[ROUTE] {' → '.join(route)}")
+
+        # Pop the user address to avoid looping
+        route.pop(0)
+
         envelope = {
             "route": route.copy(),
             "msg_id" : msg_uuid,
@@ -111,10 +115,7 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
             "stap": time.time(),
             "type": "msg"
         }
-
-
-        # Pop the user address to avoid looping
-        route.pop(0)
+        
         first_hop = route[0]
         host, port = parse_hostport(first_hop)
         if not host or port is None:

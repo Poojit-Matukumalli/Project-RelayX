@@ -8,13 +8,21 @@ from RelayX.utils.queue import incoming_queue, ack_queue
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, relay_send
-from RelayX.database.crud import add_message
-from Keys.public_key_private_key.generate_keys import handshake_responder
+from RelayX.database.crud import add_message, get_username
+from RelayX.core.handshake import do_handshake
 from RelayX.utils import config
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
 Max_retries = 5
+
+def force_json(object):
+    while isinstance(object, str):
+        try:
+            object = json.loads(object)
+        except Exception as e:
+            incoming_queue.put_nowait(f"\n[JSON PARSE ERROR]\n{e}") ; break
+    return object
 
 async def handle_incoming(reader, writer):
     global user_onion, PROXY
@@ -22,21 +30,22 @@ async def handle_incoming(reader, writer):
         data = await asyncio.wait_for(reader.readline(), timeout=5.0)
         msg_raw = data.decode().strip()
         try:
-            envelope = json.loads(msg_raw)
+            envelope = force_json(msg_raw)
             if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-                await handshake_responder(envelope, user_onion, send_via_tor)
+                await do_handshake(user_onion, recipient_onion, send_via_tor)
+                
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
                 print(f"[ACK RECEIVED] msg_id={envelope.get('msg_id')}")
                 return
             else:
                 recipient_onion = envelope.get("from")
+                recipient_username = get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
-                decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
-                await add_message(user_onion, recipient_onion, decrypted, msg_id)
-                await incoming_queue.put({"msg": decrypted})
-
-                print(f"\n[INCOMING MESSAGE]\nFrom: {envelope.get('from')}\nMsg: {decrypted}\n")
+                msg = envelope.get("payload", "")
+                #decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
+                #await add_message(user_onion, recipient_onion, decrypted, msg_id)
+                await incoming_queue.put(f"\n[INCOMING MESSAGE]\nFrom: {recipient_username}\nMsg: {msg}\n")
                 ack_env = {
                     "msg_id": envelope.get("msg_id"),
                     "from": user_onion,

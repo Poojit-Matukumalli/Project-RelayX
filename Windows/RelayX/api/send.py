@@ -5,13 +5,13 @@ PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
-from utilities.network.Client_RelayX import relay_send, send_via_tor
+from utilities.network.Client_RelayX import send_via_tor
 from RelayX.models.request_models import SendModel
 from RelayX.utils.config import ROTATE_AFTER_MESSAGES, user_onion
 from RelayX.core.rotator import key_rotation
 from RelayX.core.handshake import do_handshake
-from RelayX.database.crud import add_message
 from RelayX.utils import config
+from RelayX.core.send_msg import send_to_peer
 import uuid
 
 router = APIRouter()
@@ -24,9 +24,8 @@ async def send_message(model : SendModel):
     #if recipient_onion not in config.session_key:
     #    await do_handshake(user_onion, recipient_onion, send_via_tor)
     plaintext = model.msg
-    await add_message(user_onion, recipient_onion, plaintext, msg_id)
     #cipher = encrypt_message(config.session_key[recipient_onion],plaintext)
-    await relay_send(plaintext, user_onion, recipient_onion,msg_id, show_route=True)
+    await send_to_peer(recipient_onion, user_onion, plaintext, msg_id)
     config.message_count += 1
     if config.message_count >= ROTATE_AFTER_MESSAGES:
         await do_handshake(user_onion, recipient_onion, send_via_tor)

@@ -6,6 +6,8 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from utilities.network.Client_RelayX import relay_send
 from RelayX.utils import queue
+from utilities.network.Initial_Node import verify_connection
+from RelayX.database.crud import add_message
 
 async def ack_relay_send(message, user_onion, recipient_onion):
     msg_id = str(uuid.uuid4())
@@ -18,3 +20,9 @@ async def ack_relay_send(message, user_onion, recipient_onion):
         except asyncio.TimeoutError:
             continue
     return False
+
+async def send_to_peer(recipient_onion, user_onion, plaintext, msg_id):
+    online = await verify_connection(recipient_onion)
+    if online:
+        await ack_relay_send(plaintext, user_onion, recipient_onion)
+        await add_message(user_onion, recipient_onion, plaintext, msg_id)

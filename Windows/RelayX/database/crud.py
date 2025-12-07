@@ -28,6 +28,11 @@ async def get_user(onion :str):
         result = await session.execute(select(User).where(User.onion == onion))
         return result.scalar_one_or_none()
     
+async def get_username(user_onion : str) -> str:
+    user_record = await get_user(user_onion)
+    if user_record:
+        recipient_username = user_record.display_name
+        return recipient_username
 # Messages -----------------------------------------------------------------------------------------------
 
 async def add_message(sender_onion : str, recipient_onion : str, message : str, msg_id : str):
