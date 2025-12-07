@@ -17,12 +17,12 @@ sys.path.insert(0, PROJECT_ROOT)
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from Keys.public_key_private_key.generate_keys import handshake_responder
-from RelayX.utils.config import user_onion
+from RelayX.utils.config import user_onion, relay_file
 
 # ========================= Helpers ====================================================================================
  
 def load_active_relays():       # Loads active relays... Duh
-    relay_file = os.path.join(PROJECT_ROOT,"utilities", "network", "relay_list.json")
+    global relay_file
     try:
         with open(relay_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -79,13 +79,11 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
         )
         writer.write((json.dumps(envelope) + "\n").encode())
         await writer.drain()
-        await asyncio.sleep(0.05)
         writer.close()
         await writer.wait_closed()
-        print(onion_route)
-        print(f"[OK] Envelope sent → {onion_route}:{port}")
+        print(f"\n[OK] Envelope sent → {onion_route}:{port}\n")
     except Exception as e:
-        print(f"[FAIL] Transmission error → {onion_route}:{port} | {e}")
+        print(f"\n[FAIL] Transmission error → {onion_route}:{port} | {e}")
 
 # Helper, Accessed in the executor script --------------------------------------------------------------------------------
 
@@ -93,7 +91,7 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
     try:
         active_relays = load_active_relays()
         if not active_relays:
-            print("[ERR] No active relays found.")
+            print("\n[ERR] No active relays found.")
             return
 
         route_relays = await build_route(active_relays, min_hops=1, max_hops=1)
@@ -101,10 +99,11 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
         # route (user → relays → destination)
         route = [f"{user_onion}:5050"] + route_relays + [f"{recipient_onion}:5050"]
         if show_route:
-            print(f"[ROUTE] {' → '.join(route)}")
+            print("\n[ROUTE]\n")
+            for i, hop in enumerate(route, start=1):
+                print(f"Hop {i}. {hop.replace("\n", "")}")
 
-        # Pop the user address to avoid looping
-        route.pop(0)
+        route.pop(0) # popping onion to avoid looping back
 
         envelope = {
             "route": route.copy(),
@@ -119,10 +118,10 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
         first_hop = route[0]
         host, port = parse_hostport(first_hop)
         if not host or port is None:
-            print("[Error] Invalid first hop.")
+            print("\n[Error] Invalid first hop.\n")
             return
         proxy = ("127.0.0.1", 9050)
         await send_via_tor(host, port, envelope, proxy)
 
     except Exception as e:
-        print(f"[ERR] Relay send failed: {e}")
+        print(f"\n[ERR] Relay send failed: {e}\n")

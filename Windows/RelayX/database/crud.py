@@ -1,6 +1,6 @@
 from sqlalchemy.future import select
 from sqlalchemy import text
-import os,sys
+import os,sys, asyncio
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))

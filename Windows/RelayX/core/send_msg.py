@@ -26,3 +26,5 @@ async def send_to_peer(recipient_onion, user_onion, plaintext, msg_id):
     if online:
         await ack_relay_send(plaintext, user_onion, recipient_onion)
         await add_message(user_onion, recipient_onion, plaintext, msg_id)
+    else:
+        print("Peer offline")

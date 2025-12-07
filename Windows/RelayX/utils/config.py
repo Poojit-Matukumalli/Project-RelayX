@@ -17,8 +17,9 @@ message_count = 0
 session_key = {}
 
 # Paths & onion -----------
-tor_path = os.path.abspath(os.path.join("Windows", "Networking", "tor", "tor.exe" ))
-details_json = os.path.abspath(os.path.join("Windows", "utilities","network", "details.json"))
-relay_file = os.path.abspath(os.path.join("Windows", "network", "relay_list.json"))
+
+tor_path = os.path.join(PROJECT_ROOT, "Networking", "tor", "tor.exe" )
+details_json = os.path.join(PROJECT_ROOT, "utilities","network", "details.json")
+relay_file = os.path.join(PROJECT_ROOT, "utilities", "network", "relay_list.json")
 
 user_onion = asyncio.run(load_onion())

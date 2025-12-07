@@ -13,7 +13,7 @@ from sqlalchemy import delete
 router = APIRouter()
 
 @router.post("/clear_chat")
-async def clear_chat(user1, user2):
+async def clear_chat(user1 : str, user2 : str) -> dict:
     """Both user1 and user2 must be onions"""
     async with async_session() as session:
         async with session.begin():

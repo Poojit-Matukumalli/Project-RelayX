@@ -15,7 +15,7 @@ from RelayX.utils import config
 router = APIRouter()
 
 @router.post("/connect")
-async def connect(model : ConnectModel):
+async def connect(model : ConnectModel) -> dict:
     global recipient_onion, user_onion
     recipient_onion = model.recipient_onion
     ok = await verify_connection(recipient_onion)
