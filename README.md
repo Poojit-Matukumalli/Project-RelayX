@@ -9,14 +9,15 @@ If you are interested in setting up a RelayX of your own, check out [SETUP.md](S
 
 ## Overview :
 
-RelayX is a *desktop messaging platform* designed for *maximum privacy and security*, combining Tor networking with modern cryptography and a lightweight Flutter UI.
+RelayX is a *desktop messaging platform* designed for *maximum privacy and security*, without server dependence (Semi-Decentralized), combining Tor networking with modern cryptography and a lightweight Flutter UI.
 
 Key highlights:
+- No servers, messages are sent using tor infrastructure and user maintained RelayX nodes.
 - Anonymous multi-hop messaging through Tor relays.
 - X25519-based key exchange and HKDF session keys for secure communication.
 - Signed messages and timestamping to prevent replays.
 - Asynchronous communication for smooth UX.
-- Minimal metadata storage—your privacy, always.
+- Zero metadata. Your privacy, always first.
 
 ---
 
@@ -36,7 +37,7 @@ Key highlights:
 - *Replay Protection:* Messages are signed and timestamped.  
 - *Email Integration:* New users receive signature public keys via email automatically.  
 - *Cross-Platform Desktop:* Flutter UI runs on Windows, Linux, and Android.  
-- *Zero Metadata:* No unnecessary user info stored; privacy-first approach.  
+- *Zero Metadata:* No nnecessary data sent in the envelope; privacy-first approach.  
 
 ---
 
@@ -72,10 +73,10 @@ cd Project-RelayX\Windows\RelayX.py && cls && python main.py
 1. Launch the app.
 
 
-2. Add a new user by entering their username and email.
+2. Add a new user by entering their username.
 
 
-3. RelayX generates cryptographic IDs internally and sends signature public keys via email.
+3. RelayX generates cryptographic IDs internally and provides a QR code.
 
 
 4. Start secure messaging over Tor relays immediately.
@@ -104,10 +105,13 @@ For full terms, see [LICENSE.md](LICENSE.md).
 
 ## 📬 Contact
 
-Created by Poojit Matukumalli.
+By The Project-RelayX Team.
+Founded by - Poojit Matukumalli.
 
 Reach out via email or open an issue on GitHub.
 If Emailing about any issues, Please summarize the issue in 10 words or less in the Subject line.
-Anyone can reach out casually if they want, Thanks for using Project RelayX.
+Anyone can reach out casually if they want.
+
+Thank you for using Project RelayX.
 
 Email : projectrelayx@gmail.com
