@@ -49,21 +49,22 @@ Key highlights:
 
 ### Developer Setup
 ```bash
-git clone https://github.com/Poojit-Matukumalli/Project-RelayX.git &&
-cd Project-RelayX &&
+git clone https://github.com/Poojit-Matukumalli/Project-RelayX.git
+```
+```
+cd Project-RelayX
+```
+```
 pip install -r requirements.txt
 ```
 ```
 flutter build windows (or) linux
 ```
 Run backend and frontend separately :
+For Windows:
 ```
-python backend/main.py run
+cd Project-RelayX\Windows\RelayX.py && cls && python main.py
 ```
-```
-flutter run
-```
-
 ---
 
 ## Usage :
