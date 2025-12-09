@@ -14,7 +14,7 @@ async def ack_relay_send(message, user_onion, recipient_onion):
     for Attempt in range(3):
         await relay_send(message=message, user_onion=user_onion, recipient_onion=recipient_onion,msg_uuid=msg_id, show_route=True)
         try:
-            ack = await asyncio.wait_for(queue.ack_queue.get(), timeout=10)
+            ack = await asyncio.wait_for(queue.ack_queue.get(), timeout=15)
             if ack["msg_id"] == msg_id:
                 return True
         except asyncio.TimeoutError:
