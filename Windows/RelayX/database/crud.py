@@ -26,6 +26,7 @@ async def add_user(onion : str, display_name :str, email : str):
 async def get_user(onion :str):
     async with async_session() as session:
         result = await session.execute(select(User).where(User.onion == onion))
+        print(result.scalar_one_or_none())
         return result.scalar_one_or_none()
     
 async def get_username(user_onion : str) -> str:

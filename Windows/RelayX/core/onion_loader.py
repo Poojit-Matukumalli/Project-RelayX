@@ -15,8 +15,8 @@ async def load_onion():
     for _ in range(50):
         if os.path.exists(addr_file):
             with open(addr_file, "r") as f:
-                addr_user_onion = f.read()
-                return addr_user_onion     
+                user_onion = f.read().strip()
+                return user_onion     
         await asyncio.sleep(0.2)
     return 
 

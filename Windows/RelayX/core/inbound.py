@@ -9,7 +9,7 @@ from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, relay_send
 from RelayX.database.crud import add_message, get_username
-from RelayX.core.handshake import do_handshake
+from RelayX.core.handshake import handshake_responder
 from RelayX.utils import config
 
 listen_port = LISTEN_PORT
@@ -36,12 +36,14 @@ async def handle_incoming(reader, writer):
         msg_raw = data.decode().strip()
         try:
             envelope = force_json(msg_raw)
+            if not envelope:
+                await incoming_queue.put({"Raw_Message" : msg_raw})
             if not isinstance(envelope, dict):
                 raise ValueError("JSON type is NOT dict")
             recipient_onion = str(envelope.get("from")).strip().replace("\n", "")
 
             if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-                await do_handshake(user_onion, recipient_onion, send_via_tor)
+                await handshake_responder(user_onion, recipient_onion, send_via_tor)
                 return 
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
@@ -51,8 +53,13 @@ async def handle_incoming(reader, writer):
                 recipient_username = await get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
                 msg = envelope.get("payload", "")
-                #decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
-                #await add_message(user_onion, recipient_onion, decrypted, msg_id)
+                session_key = config.session_key.get(recipient_onion)
+                if session_key:
+                    decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
+                    await add_message(user_onion, recipient_onion, decrypted, msg_id)
+                else:
+                     print(f"[WARN] No session key for {recipient_onion}. cannoyt decrypt")
+                     
                 print(f"\n[INCOMING MESSAGE]\nFrom: {recipient_username}\nMsg: {msg}\n")
                 ack_env = {
                     "msg_id": envelope.get("msg_id"),
