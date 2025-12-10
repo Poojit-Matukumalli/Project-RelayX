@@ -24,8 +24,7 @@ async def send_message(model : SendModel):
     if recipient_onion not in config.session_key:
         await do_handshake(user_onion, recipient_onion, send_via_tor)
     plaintext = model.msg
-    cipher = encrypt_message(config.session_key[recipient_onion],plaintext)
-    await send_to_peer(recipient_onion, user_onion, plaintext, cipher, msg_id)
+    await send_to_peer(recipient_onion, user_onion, plaintext, msg_id)
     config.message_count += 1
     if config.message_count >= ROTATE_AFTER_MESSAGES:
         await do_handshake(user_onion, recipient_onion, send_via_tor)
