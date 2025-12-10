@@ -23,5 +23,4 @@ def encrypt_message(chat_key: bytes, message: str) -> str:
             raise RuntimeError("[ENCRYPT ERROR] Encryption failed")
         return encrypted
     except Exception as e:
-        print(f"[ENCRYPT ERROR] {e}")
         return ""

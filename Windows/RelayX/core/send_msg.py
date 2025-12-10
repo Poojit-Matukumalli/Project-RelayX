@@ -10,11 +10,12 @@ from utilities.network.Initial_Node import verify_connection
 from RelayX.database.crud import add_message
 from RelayX.utils.config import PROXY
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
-from RelayX.utils.config import session_key
+from RelayX.utils import config
 
 async def ack_relay_send(message, user_onion, recipient_onion):
     msg_id = str(uuid.uuid4())
     for Attempt in range(3):
+        session_key = config.session_key.get(recipient_onion)
         cipher = encrypt_message(session_key, message)
         await relay_send(message=cipher, user_onion=user_onion, recipient_onion=recipient_onion,msg_uuid=msg_id, show_route=True)
         try:

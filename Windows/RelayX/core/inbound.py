@@ -60,6 +60,7 @@ async def handle_incoming(reader, writer):
                 recipient_username = await get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
                 msg = envelope.get("payload", "")
+                print(msg)
                 decrypted = None
 
                 if not session_key.get(recipient_onion):
@@ -75,7 +76,7 @@ async def handle_incoming(reader, writer):
                             await asyncio.sleep(0.05)
 
                     pass
-                   
+
                 decrypted = decrypt_message(config.session_key.get(recipient_onion), msg)
                 await incoming_queue.put(decrypted)
                 await add_message(user_onion, recipient_onion, decrypted, msg_id)
