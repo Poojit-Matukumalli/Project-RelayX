@@ -24,8 +24,7 @@ def pad_key(key: bytes) -> bytes:
 
 def encrypt_message(chat_key: bytes, message: str) -> str:
     try:
-        shield_key = derive_shield_key(chat_key)
-        shielded = shield_encrypt(shield_key, message)
+        shielded = shield_encrypt(chat_key, message)
         if not shielded:
             raise RuntimeError("Shield encryption failed")
         fernet_key = pad_key(chat_key)

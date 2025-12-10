@@ -17,18 +17,23 @@ Ack_timeout = 3
 Max_retries = 5
 
 def force_json(object):
-    while isinstance(object, str):
+    if isinstance(object, dict):
+        return object
+    if isinstance(object, str):
         try:
-            object = json.loads(object)
+            parsed = json.loads(object)
+            if isinstance(parsed, dict):
+                return parsed
         except Exception as e:
-            print(f"\n[JSON PARSE ERROR]\n{e}") ; return
-    return object
+            print(f"\n[JSON PARSE ERROR]\n{e}")
+            return {"raw" : object}
+    return {"raw" : object}
 
 async def handle_incoming(reader, writer):
     global user_onion, PROXY
     try:
         data = await asyncio.wait_for(reader.readline(), timeout=5.0)
-        while data == b'':
+        while data in [b'', b'\n']:
             await asyncio.sleep(0.05)
             data = await asyncio.wait_for(reader.readline(), timeout=5.0)
         if not data:
@@ -37,13 +42,14 @@ async def handle_incoming(reader, writer):
         try:
             envelope = force_json(msg_raw)
             if not envelope:
-                await incoming_queue.put({"Raw_Message" : msg_raw})
+                await incoming_queue.put({"Raw_Message" : "None"})
             if not isinstance(envelope, dict):
                 raise ValueError("JSON type is NOT dict")
             recipient_onion = str(envelope.get("from")).strip().replace("\n", "")
 
             if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-                await handshake_responder(user_onion, recipient_onion, send_via_tor)
+                await handshake_responder(envelope, user_onion, send_via_tor)
+                print(f"[ACK sent]\nTo  {await get_username(recipient_onion )}")
                 return 
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
@@ -72,7 +78,7 @@ async def handle_incoming(reader, writer):
 
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
-            await incoming_queue.put({"msg": msg_raw})
+            await incoming_queue.put({"msg": envelope})
 
     except Exception as e:
             print({"msg": f"[INBOUND ERROR] {e}"})

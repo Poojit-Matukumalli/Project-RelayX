@@ -14,6 +14,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 
 from RelayX.utils import config
+from utilities.encryptdecrypt.shield_crypto import derive_shield_key
 # ---------------- Pending handshakes ---------------------------------------------
 
 pending_handshakes = {} # Dict{str, Tuple(X25519PrivateKey, bytes, asyncio.Future)}
@@ -43,18 +44,6 @@ def derive_shared_key(private_key: X25519PrivateKey, peer_public_key_bytes: byte
     peer_pub = X25519PublicKey.from_public_bytes(peer_public_key_bytes)
     return private_key.exchange(peer_pub)
 
-# ----------------------------------------------------------------------------------------------
-
-def derive_session_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> bytes:
-    salt = nonce_a + nonce_b
-
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        info=b"RelayX-ephemeral-session-key",
-    )
-    return hkdf.derive(shared_key)
 # --------------------------------------------------------------------------------
 def make_init_message(public_bytes,nonce_a, user_onion) -> dict:
     return {
@@ -81,7 +70,7 @@ def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
 
 async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, proxy=("127.0.0.1", 9050), timeout=10.0):
     my_private, my_public_bytes = generate_x25519()
-    nonce_a = os.urandom(12)
+    nonce_a = os.urandom(16)
     # make_init_message expects (public_bytes, nonce_a, user_onion)
     initial = make_init_message(my_public_bytes, nonce_a, user_onion)
     loop = asyncio.get_event_loop()
@@ -96,7 +85,7 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, pr
         peer_pub_bytes = b64_decode(resp["pub"])
         nonce_b = b64_decode(resp["nonce_b"])
         shared_key = derive_shared_key(my_private, peer_pub_bytes)
-        config.session_key[peer_onion] = derive_session_key(shared_key, nonce_a, nonce_b)
+        config.session_key[peer_onion] = derive_shield_key(shared_key, nonce_a, nonce_b)
         return config.session_key[peer_onion]
     except asyncio.TimeoutError:
         return None
@@ -115,12 +104,12 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, pro
         except Exception:
             return None
         my_private, my_public = generate_x25519()
-        nonce_b = os.urandom(12)
+        nonce_b = os.urandom(16)
         resp_msg = make_resp_message(my_public, user_onion, envelope.get("nonce"), nonce_b)
         await send_via_tor(peer, 5050, resp_msg, proxy=proxy)
 
         shared_key = derive_shared_key(my_private, peer_public)
-        config.session_key[peer] = derive_session_key(shared_key, nonce_a, nonce_b)
+        config.session_key[peer] = derive_shield_key(shared_key, nonce_a, nonce_b)
         return config.session_key[peer]
     elif type == "HANDSHAKE_RESP":
         if peer in pending_handshakes:

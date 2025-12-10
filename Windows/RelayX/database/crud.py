@@ -26,8 +26,9 @@ async def add_user(onion : str, display_name :str, email : str):
 async def get_user(onion :str):
     async with async_session() as session:
         result = await session.execute(select(User).where(User.onion == onion))
-        print(result.scalar_one_or_none())
-        return result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
+        print(user)
+        return user
     
 async def get_username(user_onion : str) -> str:
     user_record = await get_user(user_onion)
@@ -56,9 +57,10 @@ async def chat_history_load(user1 : str, user2 : str):
     """Both user1 & user2 need to be their respective onions"""
     async with async_session() as session:
         result = await session.execute(select(Message).where(
-            ((Message.sender == user1) & (Message.recipient == user2)) | 
-            ((Message.sender == user2) & (Message.recipient == user1))).order_by(Message.TIMESTAMP))
-        return result.scalars().all()
+            ((Message.sender_onion == user1) & (Message.recipient_onion == user2)) | 
+            ((Message.sender_onion == user2) & (Message.recipient_onion == user1))))
+        messages = result.scalars().all()
+        return messages
     
 async def fetch_chat_history(user1 : str, user2 : str) -> list:
     """Both user1 and user2 need to be their respective onions"""

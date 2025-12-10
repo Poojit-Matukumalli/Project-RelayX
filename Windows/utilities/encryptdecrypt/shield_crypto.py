@@ -15,16 +15,16 @@ HKDF_INFO = b"RelayX-shield-v1"  # context string for domain separation
 
 # =================================== Functions =======================================================================
 
-def derive_shield_key(chat_key: bytes, salt = None) -> bytes:
-    # TODO, Add salt (optional) to HKDF for session uniqueness
-    ikm = chat_key  # input key material
+def derive_shield_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> bytes:
+    salt = nonce_a + nonce_b
+
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
-        length=AESGCM_KEY_SIZE,
+        length=32,
         salt=salt,
-        info=HKDF_INFO,
+        info=b"RelayX-ephemeral-session-key",
     )
-    return hkdf.derive(ikm)
+    return hkdf.derive(shared_key)
 
 # ----------------------------------------------------------------------------------------------------
 
