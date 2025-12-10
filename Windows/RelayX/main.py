@@ -1,9 +1,24 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from api import init, connect, send, recieve, clear_chat, fetch_history, fetch_contacts
 
 app = FastAPI()
+
+origins = [
+    "*",  # Allows requests from ALL origins for testing/local HTML file use
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow POST, GET, etc.
+    allow_headers=["*"],  # Allow all headers
+)
 
 app.include_router(init.router)
 app.include_router(connect.router)

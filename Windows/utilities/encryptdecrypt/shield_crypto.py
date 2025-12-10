@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives import hashes
 # =========================================== Configuration ==============================================================
 
 AESGCM_KEY_SIZE = 32          # 256-bit AES-GCM
-AESGCM_NONCE_SIZE = 12        # recommended nonce size for GCM
-HKDF_INFO = b"RelayX-shield-v1"  # context string for domain separation
+AESGCM_NONCE_SIZE = 16        # recommended nonce size for GCM
+HKDF_INFO = b"RelayX-ephemeral-session-key"  # context string for domain separation
 
 # =================================== Functions =======================================================================
 
@@ -22,7 +22,7 @@ def derive_shield_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> byte
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
-        info=b"RelayX-ephemeral-session-key",
+        info=HKDF_INFO,
     )
     return hkdf.derive(shared_key)
 
@@ -30,7 +30,7 @@ def derive_shield_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> byte
 
 #                             WARNING
 # DO NOT CHANGE ASSOCIATED DATA UNLESS ALL YOUR CONTACTS DO THE SAME.
-# CHANGING IT WILL CAUSE DECRYPTION KILLING ITSELF LIKE MY SANITY.
+# CHANGING IT WILL CAUSE DECRYPTION COMMITTING SUICIDE LIKE MY SANITY.
 
 def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> str: 
     # Encrypts the plaintext using AES-GCM and returns urlsafe-base64 str.
@@ -42,8 +42,7 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> s
         payload = nonce + ciphertext
         return base64.urlsafe_b64encode(payload).decode()
     except Exception as e:
-        # Keep error message vague as hell so logs don't leak secrets
-        print(f"[SHIELD ENCRYPT ERROR]")
+        print(f"[SHIELD ENCRYPT ERROR], {e}")
         return ""
 
 # ----------------------------------------------------------------------------------------------------

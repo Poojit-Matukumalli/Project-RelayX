@@ -55,13 +55,15 @@ async def handle_incoming(reader, writer):
                 await ack_queue.put(envelope)
                 print(f"\n[ACK RECEIVED]\nMessage ID : {envelope.get('msg_id')}\n")
                 return
-            else:
+            elif envelope.get("type") == "msg":
                 recipient_username = await get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
                 msg = envelope.get("payload", "")
+                decrypted = None
                 session_key = config.session_key.get(recipient_onion)
                 if session_key:
-                    decrypted = decrypt_message(config.session_key[recipient_onion], envelope.get("payload", ""))
+                    decrypted = decrypt_message(config.session_key[recipient_onion], msg)
+                    await incoming_queue.put(decrypted)
                     await add_message(user_onion, recipient_onion, decrypted, msg_id)
                 else:
                      print(f"[WARN] No session key for {recipient_onion}. cannoyt decrypt")
@@ -75,6 +77,8 @@ async def handle_incoming(reader, writer):
                     "is_ack": True,
                 }
                 asyncio.create_task(send_via_tor(recipient_onion,5050,ack_env, PROXY))
+            else:
+                pass
 
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
