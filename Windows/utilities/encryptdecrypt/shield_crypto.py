@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import hashes
 # =========================================== Configuration ==============================================================
 
 AESGCM_KEY_SIZE = 32          # 256-bit AES-GCM
-AESGCM_NONCE_SIZE = 16        # recommended nonce size for GCM
+AESGCM_NONCE_SIZE = 12        # recommended nonce size for GCM
 HKDF_INFO = b"RelayX-ephemeral-session-key"  # context string for domain separation
 
 # =================================== Functions =======================================================================
