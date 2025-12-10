@@ -27,7 +27,6 @@ async def get_user(onion :str):
     async with async_session() as session:
         result = await session.execute(select(User).where(User.onion == onion))
         user = result.scalar_one_or_none()
-        print(user)
         return user
     
 async def get_username(user_onion : str) -> str:

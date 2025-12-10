@@ -49,7 +49,7 @@ async def handle_incoming(reader, writer):
 
             if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
                 await handshake_responder(envelope, user_onion, send_via_tor)
-                print(f"[ACK sent]\nTo  {await get_username(recipient_onion )}")
+                print(f"[HANDSHAKE]\nSent To  {await get_username(recipient_onion )}")
                 return 
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
@@ -66,7 +66,7 @@ async def handle_incoming(reader, writer):
                 else:
                      print(f"[WARN] No session key for {recipient_onion}. cannoyt decrypt")
                      
-                print(f"\n[INCOMING MESSAGE]\nFrom: {recipient_username}\nMsg: {msg}\n")
+                print(f"\n[INCOMING MESSAGE]\nFrom: {recipient_username}\nMsg: {decrypted}\n")
                 ack_env = {
                     "msg_id": envelope.get("msg_id"),
                     "from": user_onion,

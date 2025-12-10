@@ -12,15 +12,19 @@ from utilities.encryptdecrypt.shield_crypto import shield_decrypt, derive_shield
 
 # =================================== Functions =======================================================================
 
+def pad_key(key: bytes) -> bytes:
+    key_hash = hashlib.sha256(key).digest()
+    return base64.urlsafe_b64encode(key_hash).decode()
+
 def decrypt_message(session_key: bytes, ciphertext: str) -> str:
     try:
         # Step 1: Fernet decryption
-        fernet = Fernet(session_key)
+        fernet_key = pad_key(session_key)
+        fernet = Fernet(fernet_key)
         decrypted = fernet.decrypt(ciphertext.encode()).decode()
 
-        # Step 2: Use same derived shield key and decrypt
-        shield_key = derive_shield_key(session_key)
-        unwrapped = shield_decrypt(shield_key, decrypted)
+        #Step 2: Shield decrypt
+        unwrapped = shield_decrypt(session_key, decrypted)
 
         return unwrapped
     except Exception as e:
