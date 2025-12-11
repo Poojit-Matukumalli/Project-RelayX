@@ -8,8 +8,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.database.db import async_session
 from RelayX.database.models import User, Message
-from utilities.encryptdecrypt.decrypt_message import decrypt_message
-from utilities.encryptdecrypt.encrypt_message import encrypt_message
+from Keys.public_key_private_key.db_encryptdecrypt import db_encrypt, db_decrypt
 from RelayX.utils.keyring_manager import keyring_load_key
 from RelayX.utils.config import user_onion
 
@@ -39,7 +38,7 @@ async def get_username(user_onion : str) -> str:
 async def add_message(sender_onion : str, recipient_onion : str, message : str, msg_id : str):
     async with async_session() as session:
         async with session.begin():
-            encrypted_message = encrypt_message(key, message)
+            encrypted_message = db_encrypt(message)
             msg = Message(msg_id=str(msg_id), sender_onion=sender_onion, recipient_onion=recipient_onion, message=encrypted_message)
             session.add(msg)
 
@@ -67,7 +66,7 @@ async def fetch_chat_history(user1 : str, user2 : str) -> list:
     chat_history = []
 
     for msg in messages:
-        decrypted_text = decrypt_message(key, msg.message)
+        decrypted_text = db_decrypt(msg.message)
         chat_history.append({
             "From" : msg.sender_onion,
             "To" : msg.recipient_onion,

@@ -11,6 +11,7 @@ from utilities.network.Client_RelayX import send_via_tor
 from RelayX.database.crud import add_message, get_username
 from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator
 from RelayX.utils import config
+from RelayX.utils.queue import state_queue
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
@@ -54,13 +55,12 @@ async def handle_incoming(reader, writer):
                 return 
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
-                print(f"\n[ACK RECEIVED]\nMessage ID : {envelope.get('msg_id')}\n")
+                await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {envelope.get('msg_id')}\n")
                 return
             elif envelope.get("type") == "msg":
                 recipient_username = await get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
                 msg = envelope.get("payload", "")
-                print(msg)
                 decrypted = None
 
                 if not session_key.get(recipient_onion):
@@ -70,7 +70,6 @@ async def handle_incoming(reader, writer):
                             new_key = await handshake_initiator(user_onion, recipient_onion, send_via_tor)
 
                             if new_key:
-                                print(new_key)
                                 session_key[recipient_onion] = new_key
                         while session_key.get(recipient_onion) is None:
                             await asyncio.sleep(0.05)

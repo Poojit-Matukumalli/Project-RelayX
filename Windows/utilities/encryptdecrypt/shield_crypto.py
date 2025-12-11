@@ -42,6 +42,7 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> s
         payload = nonce + ciphertext
         return base64.urlsafe_b64encode(payload).decode()
     except Exception as e:
+        print(f"[SHIELD ENCRYPT ERROR], {e}")
         return ""
 
 # ----------------------------------------------------------------------------------------------------
@@ -59,4 +60,5 @@ def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX") -> str
         plaintext = aesgcm.decrypt(nonce, ciphertext, associated_data=ad_bytes)
         return plaintext.decode()
     except Exception as e:
+        print(f"[SHIELD DECRYPT ERROR]")
         return ""
