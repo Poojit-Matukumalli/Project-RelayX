@@ -1,33 +1,25 @@
 {
   "relays": [
     {
-      "id": "RelayX-01",
       "name": "RelayX 1",
       "onion": "kfv2qjcquyeksbrqgxhd5oj2nq3vtjxjy7xz6suxlx3vtcjjmrghnzqd.onion",
       "port": 5050,
       "region": "In",
-      "status": "active",
-      "pub_hash": "bdf67a892a17f4e5b9f271a53e72a1895e47e2d124debc7b84e9c7b94751a3c3"
+      "status": "active"
     },
     {
-      "id": "RelayX-02",
       "name": "RelayX Beta",
       "onion": "bn2zkklvomvl3xub37cyqe4izh3mktq5yfsvpyuaxncc2jeqt4cgnfqd.onion",
-      "ip": "127.0.0.1",
       "port": 5050,
       "region": "In",
-      "status": "offline",
-      "pub_hash": "a3c5d6e7f8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"
+      "status": "offline"
     },
     {
-      "id": "relay-03",
       "name": "RelayX Gamma",
       "onion": "",
-      "ip": "127.0.0.1",
       "port": 6062,
       "region": "local",
-      "status": "offline",
-      "pub_hash": "e172c61c8f4d35c41c3a39d5e3c5d8d8a10ff9e985f3b96a4ec2f1e2c72a1cb3"
+      "status": "offline"
     }
   ],
   "metadata": {

@@ -12,11 +12,8 @@ def base_networking_dir():
 ROOT_DIR = base_networking_dir()
 DATA_DIR = os.path.join(ROOT_DIR, "data", "tor_necessities")
 HS_DIR = os.path.join(ROOT_DIR, "data", "HiddenService")
+TOR_EXE = os.path.join(ROOT_DIR, "tor", "tor.exe")
 
-if os.name == "nt":
-    TOR_EXE = os.path.join(ROOT_DIR, "tor", "tor.exe")
-else:
-    TOR_EXE = os.path.join(ROOT_DIR, "tor", "tor")
 
 os.makedirs(HS_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
