@@ -4,6 +4,8 @@
 
 If you are interested in setting up a RelayX of your own, check out [SETUP.md](SETUP.md).
 
+Credits at [CREDITS.md](GitHub-docs/CREDITS.md)
+
 ---
 
 ## Overview
