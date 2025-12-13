@@ -1,7 +1,5 @@
 # ============================================== Imports ===================================================================
 
-
-
 import base64, os, time, asyncio, sys
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
@@ -68,7 +66,7 @@ def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
 
 # ============================================== Handshake =============================================================
 
-async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor, proxy=("127.0.0.1", 9050), timeout=10.0):
+async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor,make_init_message,proxy=("127.0.0.1", 9050), timeout=10.0):
     my_private, my_public_bytes = generate_x25519()
     nonce_a = os.urandom(16)
     # make_init_message expects (public_bytes, nonce_a, user_onion)
@@ -118,4 +116,3 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, pro
                 future.set_result(envelope)
         return None
     return None
-

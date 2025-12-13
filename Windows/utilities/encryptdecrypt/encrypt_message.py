@@ -4,7 +4,7 @@ Encrypts messages. uses helpers from shield crypto module
 Part of Project RelayX, By Poojit Matukumalli
 """
 
-import os,sys
+import os,sys, base64
 
 # =============================== Dynamic imports ======================================================================
 
@@ -25,3 +25,8 @@ def encrypt_message(chat_key: bytes, message: str) -> str:
     except Exception as e:
         print(f"[ENCRYPT ERROR] {e}")
         return ""
+
+def encrypt_bytes(session_key:bytes, raw : bytes) -> bytes:
+    b64 = base64.b64encode(raw).decode('utf-8')
+    encrypted_str = encrypt_message(session_key, b64)
+    return encrypted_str.encode('utf-8')

@@ -18,5 +18,4 @@ async def load_onion():
                 user_onion = f.read().strip()
                 return user_onion     
         await asyncio.sleep(0.2)
-    return 
-
+    return

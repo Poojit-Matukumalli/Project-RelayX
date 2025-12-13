@@ -87,3 +87,20 @@ async def fetch_contacts(current_onion):
             }
             for user in users
         ]
+    
+async def fetch_by_id(msg_id : str):
+    """Fetches a single message from the BDB by UUID (msg_id)"""
+    async with async_session() as session:
+        result = await session.execute(select(Message).where(Message.msg_id == msg_id))
+        message = result.scalar_one_or_none()
+        if not message:
+            return None
+        
+        decrypted_text = db_decrypt(message.message)
+        print(decrypted_text)
+
+        return {
+            "sender" : message.sender_onion,
+            "recipient" : message.recipient_onion,
+            "msg" : decrypted_text
+        }

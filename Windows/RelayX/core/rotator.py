@@ -4,7 +4,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT )
 
-from Keys.public_key_private_key.generate_keys import handshake_initiator
+from Keys.public_key_private_key.generate_keys import handshake_initiator, make_init_message
 from RelayX.utils.queue import rotation_lock, rotation_started
 from RelayX.utils.config import ROTATE_INTERVAL
 from RelayX.utils import config
@@ -18,7 +18,7 @@ async def ensure_rotation_started():
             rotation_started = True
 
 async def key_rotation(user_onion, peer_onion, send_via_tor, handshake_initiator):
-    return await handshake_initiator(user_onion, peer_onion, send_via_tor)
+    return await handshake_initiator(user_onion, peer_onion, send_via_tor, make_init_message)
 
 async def auto_rotation_monitor(user_onion, peer_onion, send_via_tor):
     """
@@ -36,4 +36,3 @@ async def auto_rotation_monitor(user_onion, peer_onion, send_via_tor):
             asyncio.sleep(30)
         except Exception as e:
             await asyncio.sleep(1)
-

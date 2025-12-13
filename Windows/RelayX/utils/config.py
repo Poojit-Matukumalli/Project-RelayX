@@ -15,6 +15,7 @@ LISTEN_PORT = 5050
 PROXY = ("127.0.0.1", 9050)
 message_count = 0
 session_key = {}
+ack_dict = {}
 
 # Paths & onion -----------
 
@@ -23,3 +24,6 @@ details_json = os.path.join(PROJECT_ROOT, "utilities","network", "details.json")
 relay_file = os.path.join(PROJECT_ROOT, "utilities", "network", "relay_list.json")
 
 user_onion = asyncio.run(load_onion())
+
+incoming_transfers = {}
+pending_transfers = {}

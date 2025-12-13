@@ -1,22 +1,23 @@
-import asyncio, json, sys, os, uuid
+import asyncio, json, sys, os, uuid, time, base64
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import incoming_queue, ack_queue, rotation_lock
-from utilities.encryptdecrypt.decrypt_message import decrypt_message
+from utilities.encryptdecrypt.decrypt_message import decrypt_message, decrypt_bytes
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor
 from RelayX.database.crud import add_message, get_username
-from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator
+from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator, make_init_message
 from RelayX.utils import config
-from RelayX.utils.queue import state_queue
+from RelayX.utils.queue import state_queue, pending_lock
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
 Max_retries = 5
 session_key = config.session_key
+
 
 def force_json(object):
     if isinstance(object, dict):
@@ -31,6 +32,62 @@ def force_json(object):
             return {"raw" : object}
     return {"raw" : object}
 
+async def handle_file_init(packet):
+        msg_id = packet.get("msg_id")
+        async with pending_lock:
+            config.incoming_transfers[msg_id] = {
+                "from" : packet["from"],
+                "file_name" : packet["filename"],
+                "total_chunks" : packet["total_chunks"],
+                "received" : {},
+                "ts" : time.time()
+            }
+
+async def handle_file_chunk(packet : dict):
+    msg_id = packet.get("msg_id")
+    idx = packet.get("chunk_index")
+    async with pending_lock:
+        transfer = config.incoming_transfers.get(packet["msg_id"])
+        recipient_onion = packet["from"]
+        if not transfer:
+            return
+    
+        idx = packet["chunk_index"]
+        if idx in transfer["received"]:
+            return
+    
+    key = session_key.get(recipient_onion)
+
+    raw = base64.b64decode(packet["data"])
+    decrypted = decrypt_bytes(key, raw)
+    transfer["received"][idx] = decrypted
+
+    ack_env = {
+                "type" : "FILE_ACK",
+                "msg_id": msg_id,
+                "chunk_index" : idx,
+                "from": user_onion,
+                "to": recipient_onion,
+            }
+    asyncio.create_task(send_via_tor(recipient_onion,5050, ack_env, PROXY))
+    if len(transfer["received"]) == transfer["total_chunks"]:
+        #Reassemble logic not done yet. Remove return then
+        return
+
+
+async def handle_file_chunk_ack(packet):
+    msg_id = packet.get("msg_id")
+    idx = packet["chunk_index"]
+    async with pending_lock:
+        transfer = config.pending_transfers[msg_id]
+        if not transfer:
+            return
+        config.pending_transfers[msg_id]["chunks"].pop(idx, None)
+
+        if not config.pending_transfers[msg_id]["chunks"]:
+            del config.pending_transfers[msg_id]
+
+
 async def handle_incoming(reader, writer):
     global user_onion, PROXY, session_key
     try:
@@ -44,15 +101,30 @@ async def handle_incoming(reader, writer):
         try:
             envelope = force_json(msg_raw)
             if not envelope:
-                await incoming_queue.put({"Raw_Message" : "None"})
+                print("[NO ENVELOPE]")
             if not isinstance(envelope, dict):
                 raise ValueError("JSON type is NOT dict")
             recipient_onion = str(envelope.get("from")).strip().replace("\n", "")
 
-            if envelope.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
+            envelope_type = envelope.get("type")
+
+            if envelope_type in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
                 await handshake_responder(envelope, user_onion, send_via_tor)
                 print(f"[HANDSHAKE]\nSent To  {await get_username(recipient_onion )}")
-                return 
+                return
+            
+            elif envelope_type == "FILE_TRANSFER_INIT":
+                await handle_file_init(envelope)
+                return
+            
+            elif envelope_type == "FILE_ACK":
+                await handle_file_chunk_ack(envelope)
+                return
+            
+            elif envelope_type == "FILE_CHUNK":
+                await handle_file_chunk(envelope)
+                return
+
             elif envelope.get("is_ack"):
                 await ack_queue.put(envelope)
                 await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {envelope.get('msg_id')}\n")
@@ -67,7 +139,7 @@ async def handle_incoming(reader, writer):
                     print(f"[WARN] No session key for {recipient_onion}. cannoyt decrypt.\n[HANDSHAKE]\nInitiating with {recipient_username}")
                     async with rotation_lock:
                         if not session_key.get(recipient_onion): 
-                            new_key = await handshake_initiator(user_onion, recipient_onion, send_via_tor)
+                            new_key = await handshake_initiator(user_onion, recipient_onion, send_via_tor, make_init_message)
 
                             if new_key:
                                 session_key[recipient_onion] = new_key
@@ -77,7 +149,7 @@ async def handle_incoming(reader, writer):
                     pass
 
                 decrypted = decrypt_message(config.session_key.get(recipient_onion), msg)
-                await incoming_queue.put(decrypted)
+                await incoming_queue.put(msg_id)
                 await add_message(user_onion, recipient_onion, decrypted, msg_id)
                 if decrypted:     
                     print(f"\n[INCOMING MESSAGE]\nFrom: {recipient_username}\nMsg: {decrypted}\n")
@@ -88,12 +160,11 @@ async def handle_incoming(reader, writer):
                         "stap": envelope.get("stap"),
                         "is_ack": True,
                     }
-                    asyncio.create_task(send_via_tor(recipient_onion,5050,ack_env, PROXY))
+                    asyncio.create_task(send_via_tor(recipient_onion,5050, ack_env, PROXY))
             else:
                 pass
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
-            await incoming_queue.put({"msg": envelope})
 
     except Exception as e:
             print({"msg": f"[INBOUND ERROR] {e}"})
