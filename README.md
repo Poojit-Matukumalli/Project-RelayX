@@ -2,7 +2,9 @@
 
 ***Built for Privacy, Funded by You.***
 
-If you are interested in setting up a RelayX of your own, check out [SETUP.md](SETUP.md).
+If you are interested in setting up a RelayX of your own, check out [SETUP.md](GitHub-docs/SETUP.md).
+
+Credits at [CREDITS.md](GitHub-docs/CREDITS.md). 
 
 ---
 
@@ -116,7 +118,7 @@ We welcome contributions! Guidelines:
 
 Project RelayX is licensed under the custom **RelayX Non-Commercial License**.
 
-For full terms, see [LICENSE.md](LICENSE.md).
+For full terms, see [LICENSE.md](GitHub-docs/LICENSE.md).
 
 ## 📬 Contact
 
