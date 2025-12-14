@@ -11,6 +11,9 @@ from RelayX.utils.config import session_key, PROXY, LISTEN_PORT, user_onion
 from RelayX.utils import config
 from RelayX.utils.queue import pending_lock
 
+ACK_TIMEOUT = 5
+MAX_RETRIES = 5
+
 def file_init_metadata(total_chunks : int, filename : str, msg_id) -> dict:
     return {
         "type": "FILE_TRANSFER_INIT",
@@ -54,21 +57,33 @@ async def _send_loop(msg_id: str):
             if not t:
                 return
             
-            inflight = t["next_idx"] - t["last_acked"]
-            if inflight >= t["window"]:
-                pass
-            else:
-                idx = t["next_idx"]
-                if idx <t["total_chunks"]:
-                    data = t["chunks"].get(idx)
-                    t["next_idx"] += 1
-                else:
-                    data = None
-        
-        if data is not None:
-            await send_chunk_process(idx, data, t["to"], msg_id)
-        else:
-            await asyncio.sleep(0.01)
+            inflight = 0
+            now = time.time()
+            for idx, chunk in t["chunks"].items():
+                if chunk.get("acked"):
+                    continue
+                
+                if "sent_ts" in chunk and now - chunk["sent_ts"] < ACK_TIMEOUT:
+                    inflight += 1
+                    continue
+                if chunk.get("retries", 0) >= MAX_RETRIES:
+                    print("[FILE SEND FAILED] Hit max retries")
+                    chunk["acked"] = True
+                    continue
+                if inflight >= t["window"]:
+                    break
+
+                await send_chunk_process(idx, chunk["data"], t["to"], msg_id)
+                chunk["sent_ts"] = now
+                chunk["retries"] = chunk.get("retries", 0) + 1
+                inflight += 1
+        all_acked = all(c.get("acked") for c in t["chunks"].values())
+        if all_acked:
+            print(f"[FILE SEND COMPLETE]")
+            async with pending_lock:
+                del config.pending_transfers[msg_id]
+            return
+        await asyncio.sleep(0.1)
 
 
 async def send_file(chunks : dict , target_onion : str, filename : str):
@@ -88,7 +103,9 @@ async def send_file(chunks : dict , target_onion : str, filename : str):
     async with pending_lock:
         config.pending_transfers[msg_id] = {
             "to" : target_onion,
-            "chunks" : chunks.copy(),
+            "chunks" : {idx : 
+                        {"data" : chunk_data,"acked" : False, "retries" : 0,
+                            "sent_ts" : 0} for idx, chunk_data in chunks.items()},
             "next_idx" : 0,
             "last_acked" : -1,
             "window" : 16,

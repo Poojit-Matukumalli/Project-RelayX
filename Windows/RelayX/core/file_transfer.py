@@ -42,6 +42,7 @@ async def handle_file_init(packet):
                 "from" : packet["from"],
                 "file_name" : packet["filename"],
                 "total_chunks" : packet["total_chunks"],
+                "msg_id" : msg_id,
                 "received" : set(),
                 "path" : tmp_path,
                 "last_acked" : -1,
@@ -62,21 +63,21 @@ async def handle_file_chunk(packet : dict):
         if idx in transfer["received"]:
             return
         
-        if packet["from"] != transfer["target"]:
+        if packet["from"] != transfer["from"]:
             return
         
         path = transfer["path"]
         filename = transfer["file_name"]
 
     key = session_key.get(sender_onion)
-    decrypted = decrypt_bytes(key, encrypted_data)
+    #decrypted = decrypt_bytes(key, encrypted_data)
 
     with open(path, "r+b") as f:
         f.seek(idx * CHUNK_SIZE)
-        f.write(decrypted)
+        f.write(encrypted_data)
 
     async with pending_lock:
-        transfer["recieved"].add(idx)
+        transfer["received"].add(idx)
         transfer["ts"] = time.time()
 
         expected = transfer["last_acked"] + 1
@@ -86,10 +87,10 @@ async def handle_file_chunk(packet : dict):
         should_ack = new_acked_upto > transfer["last_acked"]
         transfer["last_acked"] = new_acked_upto
 
-        if len(transfer["received"] % WINDOW_SIZE) == 0:
+        if len(transfer["received"]) % WINDOW_SIZE == 0:
             meta_path = f"{path}.meta"
-            with open(meta_path, "eb") as f:
-                f.write(orjson.dumps(list(transfer["received"].keys())))
+            with open(meta_path, "wb") as f:
+                f.write(orjson.dumps(list(transfer["received"])))
         complete = len(transfer["received"]) == transfer["total_chunks"]
     if should_ack:
         ack_env = {
@@ -108,7 +109,7 @@ async def handle_file_chunk(packet : dict):
         if os.path.exists(meta_path):
             os.remove(meta_path)
         async with pending_lock:
-            del config.incoming_transfers["msg_id"]
+            del config.incoming_transfers[msg_id]
 
         print(f"[RELAYX] File {msg_id} reconstructed successfully at {filename}")
 
@@ -126,11 +127,11 @@ async def handle_file_chunk_ack(packet):
         
         transfer["last_acked"] = acked_upto
 
-        for idx in list(transfer["chunks"].keys()):
+        for idx, chunk in transfer["chunks"].items():
             if idx <= acked_upto:
-                del transfer["chunks"][idx]
+                chunk["acked"] = True
         
-        transfer["trs"] = time.time()
+        transfer["ts"] = time.time()
 
         done = transfer["last_acked"] + 1 == transfer["total_chunks"]
 

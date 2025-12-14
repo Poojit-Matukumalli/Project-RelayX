@@ -1,4 +1,4 @@
-import asyncio, json, sys, os, time, base64, struct
+import asyncio, json, sys, os, struct, msgpack
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -40,7 +40,7 @@ async def handle_incoming(reader, writer):
         raw_len = await reader.readexactly(4)
         msg_len = struct.unpack("!I", raw_len)[0]
         payload = await reader.readexactly(msg_len)
-        envelope = json.loads(payload)
+        envelope = msgpack.unpackb(payload, raw=False)
         if not envelope:
             print("[NO ENVELOPE]")
         try:
