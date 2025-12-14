@@ -15,14 +15,14 @@ class Chunk(Structure):
     _fields_ = [("index", c_int),
                 ("data", ctypes.POINTER(ctypes.c_char)),
                 ("len", c_size_t)]
-
-lib = ctypes.CDLL("Windows/utilities/chunker/chunker.so")
+os.chdir(PROJECT_ROOT)
+lib = ctypes.CDLL("utilities/chunker/chunker.so")
 
 lib.chunk_file.restype = POINTER(Chunk)
 lib.chunk_file.argtypes = [c_char_p, c_size_t, POINTER(c_int)]
 lib.free_chunks.argtypes = [POINTER(Chunk), c_int]
 
-def chunk_file(path, chunk_size=16384):
+def chunk_file(path, chunk_size=1048576):
     count = c_int()
     chunks_ptr = lib.chunk_file(path.encode(), chunk_size, ctypes.byref(count))
     if not chunks_ptr:

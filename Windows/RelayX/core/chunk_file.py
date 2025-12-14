@@ -38,11 +38,38 @@ def encrypt_chunks(chunks : dict, session_key : bytes, processes:int = 4) -> dic
 async def send_chunk_process(chunk_index, chunk_data, target_onion, msg_id):
     packet = {
         "type" : "FILE_CHUNK",
+        "from" : user_onion,
+        "to" : target_onion,
         "msg_id" : msg_id,
         "chunk_index" : chunk_index,
-        "data" : base64.b64encode(chunk_data).decode("utf-8")
+        "data" : chunk_data
     }
     await send_via_tor(target_onion, LISTEN_PORT, packet, PROXY)
+
+
+async def _send_loop(msg_id: str):
+    while True:
+        async with pending_lock:
+            t = config.pending_transfers.get(msg_id) # t because im lazy
+            if not t:
+                return
+            
+            inflight = t["next_idx"] - t["last_acked"]
+            if inflight >= t["window"]:
+                pass
+            else:
+                idx = t["next_idx"]
+                if idx <t["total_chunks"]:
+                    data = t["chunks"].get(idx)
+                    t["next_idx"] += 1
+                else:
+                    data = None
+        
+        if data is not None:
+            await send_chunk_process(idx, data, t["to"], msg_id)
+        else:
+            await asyncio.sleep(0.01)
+
 
 async def send_file(chunks : dict , target_onion : str, filename : str):
     """
@@ -51,50 +78,25 @@ async def send_file(chunks : dict , target_onion : str, filename : str):
 
     msg_id = str(uuid.uuid4())
     total_chunks = len(chunks)
+    #key = session_key[target_onion]
+    #if not key:
+        #print(f"[FILE_SEND_ERROR] Cannot send {filename}.\nNo Session key exists for {target_onion}")
+        #return
+    
+    #encrypted_chunks = encrypt_chunks(chunks, key)
+    
+    async with pending_lock:
+        config.pending_transfers[msg_id] = {
+            "to" : target_onion,
+            "chunks" : chunks.copy(),
+            "next_idx" : 0,
+            "last_acked" : -1,
+            "window" : 16,
+            "total_chunks" : total_chunks,
+            "ts" : int(time.time())
+        }
 
     # Details so the recipient can join chunks
     metadata_packet = file_init_metadata(total_chunks, filename, msg_id)
     await send_via_tor(target_onion, LISTEN_PORT, metadata_packet, PROXY)
-
-    key = session_key[target_onion]
-    if not key:
-        return
-    
-    encrypted_chunks = encrypt_chunks(chunks, key)
-
-    async with pending_lock:
-        config.pending_transfers[msg_id] = {
-            "target" : target_onion,
-            "chunks" : encrypted_chunks.copy(),
-            "total" : len(encrypted_chunks),
-            "retries" : 0,
-            "ts" : int(time.time())
-        }
-
-    MAX_RETRIES = 5
-    ACK_TIMEOUT = 2
-    WINDOW = 16
-    while msg_id in config.pending_transfers:
-        state = config.pending_transfers[msg_id]
-        async with pending_lock:
-            if not state["chunks"]:
-                del config.pending_transfers[msg_id]
-                print("[FILE SEND COMPLETE]")
-            return
-        if state["retries"] >= MAX_RETRIES:
-            print("[FILE SEND FAILED] Missing chunks :", list(state["chunks"].items()))
-            del config.pending_transfers[msg_id]
-            return
-        
-        window = list(state["chunks"].items())[:WINDOW]
-
-    tasks = [
-        asyncio.create_task(
-            send_chunk_process(idx, data, target_onion, msg_id)
-            ) for idx, data in window
-        ]
-    await asyncio.gather(*tasks)
-
-    async with pending_lock:
-        state["retries"] += 1
-        await asyncio.sleep(ACK_TIMEOUT)
+    asyncio.create_task(_send_loop(msg_id))

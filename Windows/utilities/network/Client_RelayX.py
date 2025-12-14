@@ -7,7 +7,7 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys, uuid, asyncio
+import os, time, sys, struct
 # ============================== Dynamic imports =======================================================================
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -77,7 +77,9 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
             host=onion_route,
             port=port
         )
-        writer.write((json.dumps(envelope) + "\n").encode())
+        data = json.dumps(envelope).encode()
+        length = struct.pack("!I", len(data)) # Big Endian
+        writer.write(length + data)
         await writer.drain()
         writer.close()
         await writer.wait_closed()
