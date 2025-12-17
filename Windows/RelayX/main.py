@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from api import init, connect, send, recieve, clear_chat, fetch_history, fetch_contacts, state_ws, file_sending
+from api import init, send, recieve, clear_chat, fetch_history, fetch_contacts, state_ws, file_sending
 
 app = FastAPI()
 
@@ -21,8 +21,6 @@ app.add_middleware(
 )
 
 app.include_router(init.router)
-app.include_router(connect.router)
-app.include_router(send.router)
 app.include_router(recieve.router)
 app.include_router(clear_chat.router)
 app.include_router(fetch_history.router)

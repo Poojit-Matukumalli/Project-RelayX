@@ -52,6 +52,8 @@ async def send_chunk_process(chunk_index, chunk_data, target_onion, msg_id):
 
 async def _send_loop(msg_id: str):
     while True:
+        to_send = []
+        now = time.time()
         async with pending_lock:
             t = config.pending_transfers.get(msg_id) # t because im lazy
             if not t:
@@ -73,16 +75,22 @@ async def _send_loop(msg_id: str):
                 if inflight >= t["window"]:
                     break
 
-                await send_chunk_process(idx, chunk["data"], t["to"], msg_id)
                 chunk["sent_ts"] = now
                 chunk["retries"] = chunk.get("retries", 0) + 1
                 inflight += 1
-        all_acked = all(c.get("acked") for c in t["chunks"].values())
-        if all_acked:
-            print(f"[FILE SEND COMPLETE]")
-            async with pending_lock:
+                to_send.append((idx, chunk["data"], t["to"], msg_id))
+        for args in to_send:
+            await send_chunk_process(*args)
+        async with pending_lock:
+            t = config.pending_transfers.get(msg_id)
+            if not t:
+                return
+            
+            all_acked = all(c.get("acked") for c in t["chunks"].values())
+            if all_acked:
+                print(f"[FILE SEND COMPLETE]")
                 del config.pending_transfers[msg_id]
-            return
+                return
         await asyncio.sleep(0.1)
 
 

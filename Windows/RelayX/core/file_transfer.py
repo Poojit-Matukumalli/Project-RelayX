@@ -123,12 +123,12 @@ async def handle_file_chunk(packet : dict):
         print(f"[RELAYX] File {msg_id} reconstructed successfully at {filename}")
 
 
-async def handle_file_chunk_ack(packet):
+async def handle_file_chunk_ack(packet : dict):
     msg_id = packet.get("msg_id")
-    acked_upto = packet["acked_upto"]
+    acked_upto = packet.get("acked_upto")
 
     async with pending_lock:
-        transfer = config.pending_transfers[msg_id]
+        transfer = config.pending_transfers.get(msg_id)
         if not transfer:
             return
         if acked_upto <= transfer["last_acked"]:
