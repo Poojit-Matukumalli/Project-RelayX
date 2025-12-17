@@ -41,9 +41,10 @@ async def handle_file_init(packet):
             config.incoming_transfers[msg_id] = {
                 "from" : packet["from"],
                 "file_name" : packet["filename"],
-                "total_chunks" : packet["total_chunks"],
+                "total_chunks" : total_chunks,
                 "msg_id" : msg_id,
                 "received" : set(),
+                "last_chunk_len" : 0,
                 "path" : tmp_path,
                 "last_acked" : -1,
                 "ts" : time.time()
@@ -57,6 +58,8 @@ async def handle_file_chunk(packet : dict):
 
     async with pending_lock:
         transfer = config.incoming_transfers.get(packet["msg_id"])
+        if idx == transfer["total_chunks"] - 1:
+            transfer["last_chunk_len"] = len(encrypted_data)
         if not transfer:
             return
         
@@ -103,11 +106,17 @@ async def handle_file_chunk(packet : dict):
         asyncio.create_task(send_via_tor(sender_onion,5050, ack_env, PROXY))
     
     if complete:
-        os.rename(path, filename)
+        last_idx = transfer["total_chunks"] - 1
+        last_size = transfer.get("last_chunk_len", CHUNK_SIZE)
+        final_size = last_idx * CHUNK_SIZE + last_size
 
+        with open(path, "r+b") as f:
+            f.truncate(final_size)
+        os.rename(path, filename)
         meta_path = f"{path}.meta"
         if os.path.exists(meta_path):
             os.remove(meta_path)
+            
         async with pending_lock:
             del config.incoming_transfers[msg_id]
 

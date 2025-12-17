@@ -26,7 +26,8 @@ async def ack_relay_send(message, user_onion, recipient_onion):
     return False
 
 async def send_to_peer(recipient_onion, user_onion, plaintext, msg_id):
-    online = await verify_connection(recipient_onion)
+    #online = await verify_connection(recipient_onion)
+    online = True
     if online:
 
         await ack_relay_send(plaintext, user_onion, recipient_onion)

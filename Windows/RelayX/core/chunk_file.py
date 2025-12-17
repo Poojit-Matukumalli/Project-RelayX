@@ -1,4 +1,4 @@
-import os, sys, base64, time, uuid, asyncio
+import os, sys, time, uuid, asyncio
 from multiprocessing import Pool
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -11,7 +11,7 @@ from RelayX.utils.config import session_key, PROXY, LISTEN_PORT, user_onion
 from RelayX.utils import config
 from RelayX.utils.queue import pending_lock
 
-ACK_TIMEOUT = 5
+ACK_TIMEOUT = 8
 MAX_RETRIES = 5
 
 def file_init_metadata(total_chunks : int, filename : str, msg_id) -> dict:

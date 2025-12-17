@@ -34,6 +34,21 @@ def force_json(object):
     return {"raw" : object}
 
 
+async def read_framed_message(reader: asyncio.StreamReader):
+    try:
+        raw_len = await reader.readexactly(4)
+        msg_len = struct.unpack("!I", raw_len)[0]
+
+        payload = b""
+        while len(payload) < msg_len:
+            chunk = await reader.read(msg_len - len(payload))
+            if not chunk:
+                raise ConnectionError("Connection closed")
+            payload += chunk
+        return payload
+    except Exception as e:
+        raise e
+
 async def handle_incoming(reader, writer):
     global user_onion, PROXY, session_key
     try:
@@ -49,7 +64,11 @@ async def handle_incoming(reader, writer):
 
             if envelope_type in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
                 await handshake_responder(envelope, user_onion, send_via_tor)
-                print(f"[HANDSHAKE]\nSent To  {await get_username(recipient_onion )}")
+                username = await get_username(recipient_onion )
+                if envelope_type == "HANDSHAKE_INIT":
+                    print(f"[HANDSHAKE]\nSent To  {username}")
+                else:
+                    print(f"[HANDSHAKE] Received from {username}")
                 return
             
             elif envelope_type == "FILE_TRANSFER_INIT":

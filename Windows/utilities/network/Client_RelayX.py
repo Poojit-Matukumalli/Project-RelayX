@@ -7,7 +7,7 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys, struct, msgpack
+import os, time, sys, struct, msgpack, asyncio
 # ============================== Dynamic imports =======================================================================
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -81,9 +81,15 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
         length = struct.pack("!I", len(data)) # Big Endian
         writer.write(length + data)
         await writer.drain()
+        try:
+            writer.write_eof()
+        except (AttributeError, NotImplementedError):
+            pass
+        await asyncio.sleep(0.05)
         writer.close()
         await writer.wait_closed()
-        print(f"\n[OK] Envelope sent → {onion_route}:{port}\n")
+        env_type = envelope.get("type")
+        print(f"\n[{env_type}] Envelope sent → {onion_route}:{port}\n")
     except Exception as e:
         print(f"\n[FAIL] Transmission error → {onion_route}:{port} | {e}")
 
