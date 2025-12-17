@@ -53,32 +53,39 @@ async def send_chunk_process(chunk_index, chunk_data, target_onion, msg_id):
 async def _send_loop(msg_id: str):
     while True:
         to_send = []
-        now = time.time()
         async with pending_lock:
             t = config.pending_transfers.get(msg_id) # t because im lazy
             if not t:
                 return
-            
-            inflight = 0
             now = time.time()
-            for idx, chunk in t["chunks"].items():
-                if chunk.get("acked"):
-                    continue
-                
-                if "sent_ts" in chunk and now - chunk["sent_ts"] < ACK_TIMEOUT:
-                    inflight += 1
-                    continue
-                if chunk.get("retries", 0) >= MAX_RETRIES:
-                    print("[FILE SEND FAILED] Hit max retries")
-                    chunk["acked"] = True
-                    continue
-                if inflight >= t["window"]:
+
+            inflight = sum(1 for c in t["chunks"].values() if not c["acked"] and c["sent_ts"] and now - c["sent_ts"] < ACK_TIMEOUT)
+            while inflight < t["window"]:
+                next_idx = t["last_sent"] + 1
+
+                if next_idx >= t["total_chunks"]:
                     break
 
-                chunk["sent_ts"] = now
-                chunk["retries"] = chunk.get("retries", 0) + 1
-                inflight += 1
-                to_send.append((idx, chunk["data"], t["to"], msg_id))
+                chunk = t["chunks"][next_idx]
+
+                if chunk["acked"]:
+                    continue
+
+                if chunk["sent_ts"] == 0 or now - chunk["sent_ts"] >= ACK_TIMEOUT:
+                    chunk["sent_ts"] = now
+                    chunk["retries"] += 1
+
+                    if chunk["retries"] > MAX_RETRIES:
+                        print("[CHUNK SEND FAILED] Max retries hit")
+                        chunk["acked"] = True
+                        t["last_sent"] = next_idx
+
+                    to_send.append((next_idx, chunk["data"], t["to"], msg_id))
+                    inflight += 1
+                    t["last_sent"] = next_idx
+                else:
+                    break
+
         for args in to_send:
             await send_chunk_process(*args)
         async with pending_lock:
@@ -118,7 +125,8 @@ async def send_file(chunks : dict , target_onion : str, filename : str):
             "last_acked" : -1,
             "window" : 16,
             "total_chunks" : total_chunks,
-            "ts" : int(time.time())
+            "ts" : int(time.time()),
+            "last_sent" : -1
         }
 
     # Details so the recipient can join chunks

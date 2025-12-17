@@ -127,6 +127,7 @@ async def handle_incoming(reader, writer):
 
     except Exception as e:
             print({"msg": f"[INBOUND ERROR] {e}"})
+            pass
 
     finally:
         writer.close()
