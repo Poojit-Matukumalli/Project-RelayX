@@ -1,6 +1,7 @@
 from sqlalchemy.future import select
+from sqlalchemy import desc
 from sqlalchemy import text
-import os,sys, asyncio
+import os,sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -51,30 +52,34 @@ async def fetch_undelivered(recipient_onion : str):
         await session.commit()
         return messages
 
-async def chat_history_load(user1 : str, user2 : str):
+async def chat_history_load(user1 : str, user2 : str, before_ts = None,limit : int = 200):
     """Both user1 & user2 need to be their respective onions"""
     async with async_session() as session:
-        result = await session.execute(select(Message).where(
-            ((Message.sender_onion == user1) & (Message.recipient_onion == user2)) | 
-            ((Message.sender_onion == user2) & (Message.recipient_onion == user1))))
+        query = select(Message).where(
+            (
+                ((Message.sender_onion == user1) & (Message.recipient_onion == user2)) | 
+                ((Message.sender_onion == user2) & (Message.recipient_onion == user1))
+            )
+        )
+        if before_ts is not None:
+            query = query.where(Message.TIMESTAMP < before_ts)
+            query  = (query.order_by(desc(Message.TIMESTAMP)).limit(limit))
+
+        result = await session.execute(query)
         messages = result.scalars().all()
-        return messages
+    messages.reverse()
+    return [
+        {
+            "from" : m.sender_onion,
+            "to" : m.recipient_onion,
+            "msg" : db_decrypt(m.message),
+            "timestamp" : m.TIMESTAMP,
+            "msg_id" : m.msg_id
+        }
+        for m in messages
+    ]
     
-async def fetch_chat_history(user1 : str, user2 : str) -> list:
-    """Both user1 and user2 need to be their respective onions"""
-    messages = await chat_history_load(user1, user2)
-    chat_history = []
-
-    for msg in messages:
-        decrypted_text = db_decrypt(msg.message)
-        chat_history.append({
-            "From" : msg.sender_onion,
-            "To" : msg.recipient_onion,
-            "msg" : decrypted_text,
-            "timestamp" : msg.TIMESTAMP
-        })
-    return chat_history
-
+    
 async def fetch_contacts(current_onion):
     async with async_session() as session:
         result = await session.execute(select(User).where(User.onion != current_onion))
