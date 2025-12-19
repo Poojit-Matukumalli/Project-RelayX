@@ -12,7 +12,7 @@ class User(Base):
     __tablename__ = "users"
     onion = Column(String, nullable=False, primary_key=True)
     display_name = Column(String)
-    email = Column(String)
+    blocked = Column(Boolean, default=False)
     last_seen = Column(TIMESTAMP, default=func.now(), onupdate=func.now())
 
 class Message(Base):

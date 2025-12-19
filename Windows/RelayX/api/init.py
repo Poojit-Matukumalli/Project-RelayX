@@ -15,6 +15,7 @@ router = APIRouter()
 @router.post("/init")
 async def init_backend():
     if not user_onion:
+            
             return {"Error" : "Networking Identity not found"}
     os.chdir(PROJECT_ROOT)
     start_tor()

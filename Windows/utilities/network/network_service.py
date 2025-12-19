@@ -20,28 +20,29 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 hostname_file = os.path.join(HS_DIR, "hostname")
 
-tor_process = subprocess.Popen(
-    [
-        TOR_EXE,
-        "--DataDirectory", DATA_DIR,
-        "--HiddenServiceDir", HS_DIR,
-        "--HiddenServicePort", "5050 127.0.0.1:5050"
-    ],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-    text=True
-)
+async def tor_hostname_creation():
+    tor_process = subprocess.Popen(
+        [
+            TOR_EXE,
+            "--DataDirectory", DATA_DIR,
+            "--HiddenServiceDir", HS_DIR,
+            "--HiddenServicePort", "5050 127.0.0.1:5050"
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
 
 
-timeout = 60
-start_time = time.time()
+    timeout = 60
+    start_time = time.time()
 
-while not os.path.isfile(hostname_file):
-    if time.time() - start_time > timeout:
+    while not os.path.isfile(hostname_file):
+        if time.time() - start_time > timeout:
+            tor_process.terminate()
+            raise RuntimeError("Tor failed to start within 60 seconds")
+        time.sleep(0.5)
+
+    with open(hostname_file, "r") as f:
+        onion_address = f.read().replace("\n", "").strip()
         tor_process.terminate()
-        raise RuntimeError("Tor failed to start within 60 seconds")
-    time.sleep(0.5)
-
-with open(hostname_file, "r") as f:
-    onion_address = f.read().strip()
-    tor_process.terminate()

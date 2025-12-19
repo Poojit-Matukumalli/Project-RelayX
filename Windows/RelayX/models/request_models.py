@@ -10,3 +10,12 @@ class ContactFetch(BaseModel):
 class ClearChat(BaseModel):
     user_onion1 : str
     user_onion2 : str
+class DeleteChat(BaseModel):
+    msg_id : str
+
+class BlockStatus(BaseModel):
+    onion : str
+    block_status : bool
+
+class DeleteAccont(BaseModel):
+    confirm : bool

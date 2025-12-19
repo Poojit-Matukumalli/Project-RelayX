@@ -13,6 +13,7 @@ from Keys.public_key_private_key.generate_keys import handshake_responder, hands
 from RelayX.utils import config
 from RelayX.utils.queue import state_queue, pending_lock
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
+from RelayX.database.crud import fetch_blocked_contacts
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
@@ -61,7 +62,9 @@ async def handle_incoming(reader, writer):
         try:
             envelope_type = envelope.get("type")
             recipient_onion = str(envelope.get("from")).strip().replace("\n", "")
-
+            blocked_contacts = await fetch_blocked_contacts()
+            if recipient_onion in blocked_contacts:
+                return
             if envelope_type in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
                 await handshake_responder(envelope, user_onion, send_via_tor)
                 username = await get_username(recipient_onion )

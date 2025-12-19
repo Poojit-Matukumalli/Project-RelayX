@@ -89,7 +89,7 @@ async def fetch_contacts(current_onion):
         ]
     
 async def fetch_by_id(msg_id : str):
-    """Fetches a single message from the BDB by UUID (msg_id)"""
+    """Fetches a single message from the DB by UUID (msg_id)"""
     async with async_session() as session:
         result = await session.execute(select(Message).where(Message.msg_id == msg_id))
         message = result.scalar_one_or_none()
@@ -104,3 +104,30 @@ async def fetch_by_id(msg_id : str):
             "recipient" : message.recipient_onion,
             "msg" : decrypted_text
         }
+
+async def delete_message(msg_id : str):
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(select(Message).where(Message.msg_id == msg_id))
+            message = result.scalar_one_or_none()
+            if not message:
+                return False
+            await session.delete(message)
+        await session.commit()
+        return True
+    
+async def fetch_blocked_contacts() -> set[str]:
+    async with async_session() as session:
+        result = await session.execute(select(User).where(User.blocked.is_(True)))
+        return set(result.scalars().all())
+
+async def set_block_status(onion : str, blocked_status : bool):
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(select(User).where(User.onion == onion))
+            user = result.scalar_one_or_none()
+            if not user:
+                return {"status" : "Failed", "msg" : "No such user exists"}
+            
+            user.blocked = blocked_status
+        await session.commit()
