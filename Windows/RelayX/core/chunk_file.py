@@ -69,6 +69,7 @@ async def _send_loop(msg_id: str):
                 chunk = t["chunks"][next_idx]
 
                 if chunk["acked"]:
+                    t["last_sent"] = next_idx
                     continue
 
                 if chunk["sent_ts"] == 0 or now - chunk["sent_ts"] >= ACK_TIMEOUT:
@@ -79,6 +80,7 @@ async def _send_loop(msg_id: str):
                         print("[CHUNK SEND FAILED] Max retries hit")
                         chunk["acked"] = True
                         t["last_sent"] = next_idx
+                        continue
 
                     to_send.append((next_idx, chunk["data"], t["to"], msg_id))
                     inflight += 1
