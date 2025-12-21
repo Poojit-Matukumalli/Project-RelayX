@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-import asyncio, sys, os
+import sys, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -10,7 +10,7 @@ from RelayX.models.request_models import DeleteChat
 
 router = APIRouter()
 
-@router.post("/delete_message")
+@router.delete("/delete_message")
 async def delete_one_message(request: DeleteChat):
     deleted = await delete_message(request.msg_id)
     if deleted:

@@ -14,7 +14,7 @@ from RelayX.utils.config import user_onion
 
 router = APIRouter()
 
-@router.post("/clear_chat")
+@router.delete("/clear_chat")
 async def clear_chat(req : ClearChat) -> dict:
     global user_onion
     """Both user1 and user2 must be onions"""

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-import os, sys, shutil
+import os, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) 
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -10,7 +10,7 @@ from RelayX.core.delete_account import perform_account_deletion
 
 router = APIRouter()
 
-@router.post("/delete_account")
+@router.delete("/delete_account")
 async def delete_account(req : DeleteAccont):
     if not req.confirm:
         return {"status": "Auth not completed"}

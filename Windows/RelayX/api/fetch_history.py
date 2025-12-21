@@ -7,7 +7,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 
 from RelayX.models.request_models import ConnectModel
-from RelayX.database.crud import fetch_chat_history, get_user, chat_history_load
+from RelayX.database.crud import get_user, chat_history_load
 from RelayX.utils.config import user_onion
 
 router = APIRouter()
