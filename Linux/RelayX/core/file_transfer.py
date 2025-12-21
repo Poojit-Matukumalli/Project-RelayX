@@ -4,7 +4,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from utilities.chunker.chunker import chunk_file
+from utilities.chunker.chunk import chunk_file
 from RelayX.core.chunk_file import send_file
 from RelayX.core.handshake import do_handshake
 from RelayX.utils import config

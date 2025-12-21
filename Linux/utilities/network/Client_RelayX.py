@@ -109,7 +109,7 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
         if show_route:
             print("\n[ROUTE]\n")
             for i, hop in enumerate(route, start=1):
-                print(f"Hop {i}. {hop.replace("\n", "")}")
+                print(f"Hop {i}. {hop.strip()}")
 
         route.pop(0) # popping onion to avoid looping back
 
