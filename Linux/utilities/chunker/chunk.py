@@ -9,6 +9,7 @@ import sys, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+SO_PATH = os.path.join(ROOT, "chunker.so")
 sys.path.insert(0, PROJECT_ROOT)
 
 class Chunk(Structure):
@@ -16,7 +17,7 @@ class Chunk(Structure):
                 ("data", ctypes.POINTER(ctypes.c_char)),
                 ("len", c_size_t)]
 os.chdir(PROJECT_ROOT)
-lib = ctypes.CDLL("utilities/chunker/chunker.so")
+lib = ctypes.CDLL(SO_PATH)
 
 lib.chunk_file.restype = POINTER(Chunk)
 lib.chunk_file.argtypes = [c_char_p, c_size_t, POINTER(c_int)]
