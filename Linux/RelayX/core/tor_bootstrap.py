@@ -7,7 +7,7 @@ tor_process : subprocess.Popen | None = None
 
 def start_tor():
     global tor_process
-    tor_path = os.path.join(PROJECT_ROOT,"Networking", "tor", "tor.exe")
+    tor_path = os.path.join(PROJECT_ROOT,"Networking", "tor", "tor")
     torrc_path = os.path.join(PROJECT_ROOT, "Networking", "tor", "torrc")
     tor_process = subprocess.Popen([tor_path, "-f", torrc_path],
         stdout=subprocess.DEVNULL,
