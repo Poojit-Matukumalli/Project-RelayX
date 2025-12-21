@@ -16,5 +16,3 @@ async def load_onion():
                 return user_onion     
         await asyncio.sleep(0.2)
     return
-
-asyncio.run(load_onion())
