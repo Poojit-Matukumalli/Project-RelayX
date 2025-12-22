@@ -1,19 +1,20 @@
-import asyncio, json, sys, os, struct, msgpack
+import asyncio, sys, os, struct, msgpack
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import incoming_queue, ack_queue, rotation_lock
-from utilities.encryptdecrypt.decrypt_message import decrypt_message, decrypt_bytes
+from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor
 from RelayX.database.crud import add_message, get_username
 from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator, make_init_message
 from RelayX.utils import config
-from RelayX.utils.queue import state_queue, pending_lock
+from RelayX.utils.queue import state_queue
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
 from RelayX.database.crud import fetch_blocked_contacts
+from utilities.encryptdecrypt.shield_crypto import verify_AEAD_envelope
 
 listen_port = LISTEN_PORT
 Ack_timeout = 3
@@ -21,47 +22,27 @@ Max_retries = 5
 session_key = config.session_key
 
 
-def force_json(object):
-    if isinstance(object, dict):
-        return object
-    if isinstance(object, str):
-        try:
-            parsed = json.loads(object)
-            if isinstance(parsed, dict):
-                return parsed
-        except Exception as e:
-            print(f"\n[JSON PARSE ERROR]\n{e}")
-            return {"raw" : object}
-    return {"raw" : object}
-
-
-async def read_framed_message(reader: asyncio.StreamReader):
-    try:
-        raw_len = await reader.readexactly(4)
-        msg_len = struct.unpack("!I", raw_len)[0]
-
-        payload = b""
-        while len(payload) < msg_len:
-            chunk = await reader.read(msg_len - len(payload))
-            if not chunk:
-                raise ConnectionError("Connection closed")
-            payload += chunk
-        return payload
-    except Exception as e:
-        raise e
-
 async def handle_incoming(reader, writer):
     global user_onion, PROXY, session_key
     try:
         raw_len = await reader.readexactly(4)
         msg_len = struct.unpack("!I", raw_len)[0]
         payload = await reader.readexactly(msg_len)
-        envelope = msgpack.unpackb(payload, raw=False)
-        if not envelope:
-            print("[NO ENVELOPE]")
+
+        outer = msgpack.unpackb(payload, raw=False)
+        if not outer:
+            print("[INBOUND_ERROR]\nNo envelope")
+            return
         try:
+            recipient_onion = str(outer.get("sender").strip().replace("\n", ""))
+            inner_env = outer.get("sealed_envelope")
+            if not inner_env:
+                print("[INBOUND_ERROR]\nIncoming envelope isn't sealed with AEAD.")
+                return
+            
+            inner_data = verify_AEAD_envelope(inner_env, session_key[recipient_onion])
+            envelope = msgpack.unpackb(inner_data, raw=False)
             envelope_type = envelope.get("type")
-            recipient_onion = str(envelope.get("from")).strip().replace("\n", "")
             blocked_contacts = await fetch_blocked_contacts()
             if recipient_onion in blocked_contacts:
                 return
@@ -117,8 +98,7 @@ async def handle_incoming(reader, writer):
                     ack_env = {
                         "type" : "ack_resp",
                         "msg_id": envelope.get("msg_id"),
-                        "from": user_onion,
-                        "to": envelope.get("from"),
+                        "to": recipient_onion,
                         "stap": envelope.get("stap"),
                         "is_ack": True,
                     }

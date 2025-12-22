@@ -17,7 +17,8 @@ sys.path.insert(0, PROJECT_ROOT)
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from Keys.public_key_private_key.generate_keys import handshake_responder
-from RelayX.utils.config import user_onion, relay_file
+from RelayX.utils.config import user_onion, relay_file, session_key
+from utilities.encryptdecrypt.shield_crypto import derive_AEAD_envelope
 
 # ========================= Helpers ====================================================================================
  
@@ -68,8 +69,8 @@ def parse_hostport(addr: str):
     except:
         return None, None
 
-# Helper, Accessed by relay_send() ---------------------------------------------------------------------------------------
-async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
+async def send_via_tor_transport(onion_route: str, port: int, envelope: dict, proxy):
+    """No AEAD. A helper for relay_send"""
     try:
         reader, writer = await asocks.open_connection(
             proxy_host=proxy[0],
@@ -77,6 +78,7 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
             host=onion_route,
             port=port
         )
+        env_type = envelope.get("type")
         data = msgpack.packb(envelope, use_bin_type=True)
         length = struct.pack("!I", len(data)) # Big Endian
         writer.write(length + data)
@@ -88,10 +90,41 @@ async def send_via_tor(onion_route: str, port: int, envelope: dict, proxy):
         await asyncio.sleep(0.05)
         writer.close()
         await writer.wait_closed()
-        env_type = envelope.get("type")
         print(f"\n[{env_type}] Envelope sent → {onion_route}:{port}\n")
     except Exception as e:
         print(f"\n[FAIL] Transmission error → {onion_route}:{port} | {e}")
+
+# Helper, Accessed by relay_send() ---------------------------------------------------------------------------------------
+async def send_via_tor(onion: str, port: int, envelope: dict, proxy):
+    """AEAD version for raw uses. Here onion is recipient_onion."""
+    try:
+        reader, writer = await asocks.open_connection(
+            proxy_host=proxy[0],
+            proxy_port=proxy[1],
+            host=onion,
+            port=port
+        )
+        env_type = envelope.get("type")
+        envelope_bytes = msgpack.packb(envelope, use_bin_type=True)
+        data = derive_AEAD_envelope(envelope_bytes, session_key[onion])
+        env = {
+            "sealed_envelope" : data,
+            "sender" : user_onion
+            }
+        env_bytes = msgpack.packb(env, use_bin_type=True)
+        length = struct.pack("!I", len(env_bytes)) # Big Endian
+        writer.write(length + env_bytes)
+        await writer.drain()
+        try:
+            writer.write_eof()
+        except (AttributeError, NotImplementedError):
+            pass
+        await asyncio.sleep(0.05)
+        writer.close()
+        await writer.wait_closed()
+        print(f"\n[{env_type}] Envelope sent → {onion}:{port}\n")
+    except Exception as e:
+        print(f"\n[FAIL] Transmission error → {onion}:{port} | {e}")
 
 # Helper, Accessed in the executor script --------------------------------------------------------------------------------
 
@@ -111,25 +144,27 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
             for i, hop in enumerate(route, start=1):
                 print(f"Hop {i}. {hop.strip()}")
 
-        route.pop(0) # popping onion to avoid looping back
-
-        envelope = {
-            "route": route.copy(),
+        route.pop(0) # popping onion to avoid (looping back
+        env = {
             "msg_id" : msg_uuid,
             "payload": message,
-            "from": user_onion,
             "to": recipient_onion,
             "stap": time.time(),
             "type": "msg"
         }
-        
+        sealed_envelope = derive_AEAD_envelope(env, session_key[recipient_onion])
+        envelope = {
+            "route": route.copy(),
+            "sealed_envelope" : sealed_envelope,
+            "sender" : user_onion
+        }
         first_hop = route[0]
         host, port = parse_hostport(first_hop)
         if not host or port is None:
             print("\n[Error] Invalid first hop.\n")
             return
         proxy = ("127.0.0.1", 9050)
-        await send_via_tor(host, port, envelope, proxy)
+        await send_via_tor_transport(host, port, envelope, proxy)
 
     except Exception as e:
         print(f"\n[ERR] Relay send failed: {e}\n")

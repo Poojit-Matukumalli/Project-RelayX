@@ -6,6 +6,7 @@ import os, base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ed25519
 
 # =========================================== Configuration ==============================================================
 
@@ -26,9 +27,24 @@ def derive_shield_key(shared_key: bytes, nonce_a: bytes, nonce_b: bytes) -> byte
     )
     return hkdf.derive(shared_key)
 
+def derive_AEAD_envelope(env_bytes, session_key):
+    nonce = os.urandom(12)
+    aad = b"RelayX-AEAD-envelope"
+    aesgcm = AESGCM(session_key)
+    ciphertext = aesgcm.encrypt(nonce, env_bytes, aad)
+    payload = nonce + ciphertext
+    return payload
+
+def verify_AEAD_envelope(payload, session_key):
+    nonce = payload[:12]
+    ciphertext = payload[12:]
+    aad = b"RelayX-AEAD-envelope"
+    aesgcm = AESGCM(session_key)
+    decrypted = aesgcm.decrypt(nonce, ciphertext, aad)
+    return decrypted
 # ----------------------------------------------------------------------------------------------------
 
-#                             WARNING
+#                               ⚠️ WARNING ⚠️
 # DO NOT CHANGE ASSOCIATED DATA UNLESS ALL YOUR CONTACTS DO THE SAME.
 # CHANGING IT WILL CAUSE DECRYPTION COMMITTING SUICIDE LIKE MY SANITY.
 
