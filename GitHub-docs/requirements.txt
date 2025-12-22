@@ -8,3 +8,4 @@ sqlalchemy==2.0.44
 uvicorn==0.38.0
 pydantic==2.12.4
 msgpack==1.1.2
+orjson==3.11.5

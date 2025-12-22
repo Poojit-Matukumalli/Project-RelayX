@@ -10,11 +10,11 @@ Credits at [CREDITS.md](GitHub-docs/CREDITS.md).
 
 ## Overview
 
-RelayX is a *desktop messaging platform* designed for *maximum privacy and security*, without server dependence (semi-decentralized).  
+RelayX Messenger is a *desktop messaging platform* designed for *maximum privacy and security*, without server dependence (semi-decentralized).  
 It combines Tor networking with modern cryptography and a lightweight Flutter UI.
 
 **Key highlights:**
-- No central servers — messages are sent through the Tor network and user-maintained RelayX nodes.  
+- No central servers — messages are sent through the Tor network and user-maintained RelayX relays.  
 - Anonymous multi-hop messaging via Tor relays.  
 - X25519-based key exchange with HKDF-derived session keys.  
 - Signed messages with timestamping to prevent replay attacks.  
@@ -43,14 +43,11 @@ It combines Tor networking with modern cryptography and a lightweight Flutter UI
 - **Replay Protection:**  
   All messages are signed and timestamped.
 
-- **Email Integration:**  
-  New users automatically receive their signature public keys via email.
-
 - **Cross-Platform Desktop:**  
   Flutter UI runs on Windows, Linux, and Android.
 
-- **Zero Metadata:**  
-  No unnecessary data is included in the envelope — privacy-first design.
+- **Minimal Metadata:**  
+  No Sensitive data is included in the envelope — privacy-first design. All details at [Packet info](GitHub-docs/packet_info.md)
 
 ---
 
@@ -65,7 +62,7 @@ It combines Tor networking with modern cryptography and a lightweight Flutter UI
 ---
 
 ### Developer Setup
-
+The steps below are for Windows users. Check out Linux setup in [Linux Setup](GitHub-docs/linux-Setup.md)
 ```
 git clone https://github.com/Poojit-Matukumalli/Project-RelayX.git
 ```
@@ -129,6 +126,6 @@ Reach out via email or open an issue on GitHub.
 If Emailing about any issues, Please summarize the issue in 10 words or less in the Subject line.
 Anyone can reach out casually if they want.
 
-Thank you for using Project RelayX.
+Thank you for using the RelayX Messenger.
 
 Email : projectrelayx@gmail.com
