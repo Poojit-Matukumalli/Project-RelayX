@@ -64,7 +64,7 @@ def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
 
 # ============================================== Handshake =============================================================
 
-async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_transport,make_init_message,proxy=("127.0.0.1", 9050), timeout=10.0):
+async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_transport,make_init_message,proxy=("127.0.0.1", 9050), timeout=12.0):
     my_private, my_public_bytes = generate_x25519()
     nonce_a = os.urandom(16)
     # make_init_message expects (public_bytes, nonce_a, user_onion)
@@ -73,7 +73,7 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_tra
     future_response = loop.create_future()
     pending_handshakes[peer_onion] = (my_private, nonce_a, future_response)
 
-    await send_via_tor_transport(peer_onion, 5050, initial, proxy)
+    asyncio.create_task(send_via_tor_transport(peer_onion, 5050, initial, proxy))
     try:
         resp = await asyncio.wait_for(future_response, timeout=timeout)
         if resp.get("nonce_reply") != b64_encode(nonce_a):
@@ -102,8 +102,7 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor_tran
         my_private, my_public = generate_x25519()
         nonce_b = os.urandom(16)
         resp_msg = make_resp_message(my_public, user_onion, envelope.get("nonce"), nonce_b)
-        await send_via_tor_transport(peer, 5050, resp_msg, proxy=proxy)
-
+        asyncio.create_task(send_via_tor_transport(peer, 5050, resp_msg, proxy=proxy))
         shared_key = derive_shared_key(my_private, peer_public)
         config.session_key[peer] = derive_shield_key(shared_key, nonce_a, nonce_b)
         return config.session_key[peer]

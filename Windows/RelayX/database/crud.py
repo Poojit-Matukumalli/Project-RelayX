@@ -11,7 +11,6 @@ from RelayX.database.db import async_session
 from RelayX.database.models import User, Message
 from Keys.public_key_private_key.db_encryptdecrypt import db_encrypt, db_decrypt
 from RelayX.utils.keyring_manager import keyring_load_key
-from RelayX.utils.config import user_onion
 
 # Users ------------------------------------------------------------------------------------------------
 

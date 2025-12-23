@@ -4,7 +4,11 @@ PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from utilities.network.network_service import tor_hostname_creation
+from RelayX.utils import config
+from RelayX.database.crud import fetch_blocked_contacts
 
+async def load_blocked():
+    config.blocked_users = set(await fetch_blocked_contacts())
 async def load_onion():
     addr_file = os.path.join(PROJECT_ROOT, "Networking", "data", "HiddenService","hostname")
     if not os.path.exists(addr_file):

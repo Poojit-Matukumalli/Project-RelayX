@@ -27,3 +27,4 @@ user_onion = asyncio.run(load_onion())
 
 incoming_transfers = {}
 pending_transfers = {}
+blocked_users : set[str] = set()

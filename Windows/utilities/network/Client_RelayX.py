@@ -83,12 +83,8 @@ async def send_via_tor_transport(onion_route: str, port: int, envelope: dict, pr
         length = struct.pack("!I", len(data)) # Big Endian
         writer.write(length + data)
         await writer.drain()
-        try:
-            writer.write_eof()
-        except (AttributeError, NotImplementedError):
-            pass
-        await asyncio.sleep(0.05)
         writer.close()
+        await writer.wait_closed()
         await writer.wait_closed()
         print(f"\n[{env_type}] Envelope sent → {onion_route}:{port}\n")
     except Exception as e:
@@ -109,7 +105,7 @@ async def send_via_tor(onion: str, port: int, envelope: dict, proxy):
         data = derive_AEAD_envelope(envelope_bytes, session_key[onion])
         env = {
             "sealed_envelope" : data,
-            "sender" : user_onion
+            "from" : user_onion
             }
         env_bytes = msgpack.packb(env, use_bin_type=True)
         length = struct.pack("!I", len(env_bytes)) # Big Endian
@@ -153,11 +149,12 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
             "stap": time.time(),
             "type": "msg"
         }
-        sealed_envelope = derive_AEAD_envelope(env, session_key[recipient_onion])
+        env_bytes = msgpack.packb(env, use_bin_type=True)
+        sealed_envelope = derive_AEAD_envelope(env_bytes, session_key[recipient_onion])
         envelope = {
             "route": route.copy(),
             "sealed_envelope" : sealed_envelope,
-            "sender" : user_onion
+            "from" : user_onion
         }
         first_hop = route[0]
         host, port = parse_hostport(first_hop)
@@ -168,4 +165,4 @@ async def relay_send(message ,user_onion, recipient_onion,msg_uuid, show_route=T
         await send_via_tor_transport(host, port, envelope, proxy)
 
     except Exception as e:
-        print(f"\n[ERR] Relay send failed: {e}\n")
+        print(f"\n[ERR] Relay send failed:\n{e}")
