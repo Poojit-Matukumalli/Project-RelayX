@@ -7,7 +7,7 @@ sys.path.insert(0, PROJECT_ROOT)
 from RelayX.utils.queue import incoming_queue, ack_queue, rotation_lock
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import LISTEN_PORT, PROXY, user_onion
-from utilities.network.Client_RelayX import send_via_tor
+from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
 from RelayX.database.crud import add_message, get_username
 from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator, make_init_message
 from RelayX.utils import config
@@ -17,13 +17,10 @@ from RelayX.database.crud import fetch_blocked_contacts
 from utilities.encryptdecrypt.shield_crypto import verify_AEAD_envelope
 
 listen_port = LISTEN_PORT
-Ack_timeout = 3
-Max_retries = 5
 session_key = config.session_key
 
-
 async def handle_incoming(reader, writer):
-    global user_onion, PROXY, session_key
+    global user_onion, PROXY
     try:
         raw_len = await reader.readexactly(4)
         msg_len = struct.unpack("!I", raw_len)[0]
@@ -33,29 +30,46 @@ async def handle_incoming(reader, writer):
         if not outer:
             print("[INBOUND_ERROR]\nNo envelope")
             return
-        try:
-            recipient_onion = str(outer.get("sender").strip().replace("\n", ""))
+        try: 
+            sender = outer.get("sender")
+            if not isinstance(sender, str):
+                return
+            recipient_onion = sender.strip().replace("\n", "")
+            blocked_contacts = await fetch_blocked_contacts()
+            if recipient_onion in blocked_contacts:
+                return
+            
+            recipient_username = await get_username(recipient_onion)
+
+            if outer.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
+                await handshake_responder(outer, user_onion, send_via_tor_transport)
+                if outer.get("type") == "HANDSHAKE_INIT":
+                    print(f"[HANDSHAKE]\nSent To  {recipient_username}")
+                else:
+                    print(f"[HANDSHAKE] Received from {recipient_username}")
+                return
+            
             inner_env = outer.get("sealed_envelope")
             if not inner_env:
                 print("[INBOUND_ERROR]\nIncoming envelope isn't sealed with AEAD.")
                 return
             
-            inner_data = verify_AEAD_envelope(inner_env, session_key[recipient_onion])
-            envelope = msgpack.unpackb(inner_data, raw=False)
-            envelope_type = envelope.get("type")
-            blocked_contacts = await fetch_blocked_contacts()
-            if recipient_onion in blocked_contacts:
-                return
-            if envelope_type in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-                await handshake_responder(envelope, user_onion, send_via_tor)
-                username = await get_username(recipient_onion )
-                if envelope_type == "HANDSHAKE_INIT":
-                    print(f"[HANDSHAKE]\nSent To  {username}")
-                else:
-                    print(f"[HANDSHAKE] Received from {username}")
+            async with rotation_lock:
+                if not session_key.get(recipient_onion):
+                    new_key = await handshake_initiator(user_onion, recipient_onion, send_via_tor_transport, make_init_message)
+                    if not new_key:
+                        return
+                    session_key[recipient_onion] = new_key
+
+            try:
+                inner_data = verify_AEAD_envelope(inner_env, session_key[recipient_onion])
+                envelope = msgpack.unpackb(inner_data, raw=False)
+                envelope_type = envelope.get("type")
+            except Exception as e:
+                print("[AEAD DECRYPT ERROR]\nUnable to Decrypt AEAD envelope. Please restart the app")
                 return
             
-            elif envelope_type == "FILE_TRANSFER_INIT":
+            if envelope_type == "FILE_TRANSFER_INIT":
                 await handle_file_init(envelope)
                 return
   
@@ -73,23 +87,8 @@ async def handle_incoming(reader, writer):
                 return
             
             elif envelope.get("type") == "msg":
-                recipient_username = await get_username(recipient_onion)
                 msg_id = envelope.get("msg_id")
                 msg = envelope.get("payload", "")
-                decrypted = None
-
-                if not session_key.get(recipient_onion):
-                    print(f"[WARN] No session key for {recipient_onion}. cannoyt decrypt.\n[HANDSHAKE]\nInitiating with {recipient_username}")
-                    async with rotation_lock:
-                        if not session_key.get(recipient_onion): 
-                            new_key = await handshake_initiator(user_onion, recipient_onion, send_via_tor, make_init_message)
-
-                            if new_key:
-                                session_key[recipient_onion] = new_key
-                        while session_key.get(recipient_onion) is None:
-                            await asyncio.sleep(0.05)
-                    pass
-
                 decrypted = decrypt_message(config.session_key.get(recipient_onion), msg)
                 await incoming_queue.put(msg_id)
                 await add_message(user_onion, recipient_onion, decrypted, msg_id)
@@ -103,8 +102,8 @@ async def handle_incoming(reader, writer):
                         "is_ack": True,
                     }
                     asyncio.create_task(send_via_tor(recipient_onion,5050, ack_env, PROXY))
-            else:
-                pass
+                else:
+                    print("[DECRYPT ERROR]\nDecryption was unsuccessful")
         except Exception as e:
             print("[JSON/PARSING ERROR]", e)
 

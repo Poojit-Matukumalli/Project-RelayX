@@ -92,7 +92,7 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor,mak
 
 # ========================================= Reciever (Handhskake) ====================================================
 
-async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, proxy=("127.0.0.1", 9050)):
+async def handshake_responder(envelope: dict, user_onion: str, send_via_tor_transport, proxy=("127.0.0.1", 9050)):
     type = envelope.get("type")
     peer = envelope.get("from", "")
     if type == "HANDSHAKE_INIT":
@@ -104,7 +104,7 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor, pro
         my_private, my_public = generate_x25519()
         nonce_b = os.urandom(16)
         resp_msg = make_resp_message(my_public, user_onion, envelope.get("nonce"), nonce_b)
-        await send_via_tor(peer, 5050, resp_msg, proxy=proxy)
+        await send_via_tor_transport(peer, 5050, resp_msg, proxy=proxy)
 
         shared_key = derive_shared_key(my_private, peer_public)
         config.session_key[peer] = derive_shield_key(shared_key, nonce_a, nonce_b)
