@@ -64,7 +64,7 @@ def make_resp_message(public_bytes, user_onion, nonce_a_b64, nonce_b) -> dict:
 
 # ============================================== Handshake =============================================================
 
-async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_transport,make_init_message,proxy=("127.0.0.1", 9050), timeout=12.0):
+async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_transport,make_init_message,proxy=("127.0.0.1", 9050), timeout=25):
     my_private, my_public_bytes = generate_x25519()
     nonce_a = os.urandom(16)
     # make_init_message expects (public_bytes, nonce_a, user_onion)

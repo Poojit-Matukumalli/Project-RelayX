@@ -15,11 +15,11 @@ async def ack_relay_send(message, user_onion, recipient_onion):
     for Attempt in range(3):
         session_key = config.session_key.get(recipient_onion)
         if not session_key:
-            await do_handshake(user_onion, recipient_onion, send_via_tor_transport)
+            await asyncio.wait_for(do_handshake(user_onion, recipient_onion, send_via_tor_transport), timeout=20)
         cipher = encrypt_message(session_key, message)
         await relay_send(message=cipher, user_onion=user_onion, recipient_onion=recipient_onion,msg_uuid=msg_id, show_route=True)
         try:
-            ack = await asyncio.wait_for(queue.ack_queue.get(), timeout=15)
+            ack = await asyncio.wait_for(queue.ack_queue.get(), timeout=20)
             if ack["msg_id"] == msg_id:
                 return True
         except asyncio.TimeoutError:
