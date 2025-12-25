@@ -19,3 +19,6 @@ class BlockStatus(BaseModel):
 
 class DeleteAccont(BaseModel):
     confirm : bool
+
+class CreateToken(BaseModel):
+    password : str

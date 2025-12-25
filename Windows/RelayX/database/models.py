@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, func
-import asyncio, sys, os
+import sys, os, time
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -25,6 +25,13 @@ class Message(Base):
     message = Column(String, nullable=False)
     TIMESTAMP = Column(TIMESTAMP, default=func.now())
     delivered = Column(Boolean, default=False)
+
+class Tokens(Base):
+    __tablename__ = "tokens"
+    msg_id = Column(String, primary_key=True,nullable=True)
+    path = Column(String)
+    ts = Column(Integer, default=int(time.time()))
+    burned = Column(Boolean, default=False)
 
 async def init_db():
     async with engine.begin() as conn:

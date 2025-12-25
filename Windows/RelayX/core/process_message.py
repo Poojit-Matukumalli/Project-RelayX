@@ -8,7 +8,7 @@ from RelayX.utils.queue import incoming_queue, ack_queue
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
-from RelayX.database.crud import add_message, get_username
+from RelayX.database.crud import add_message, get_username, mark_delivered
 from Keys.public_key_private_key.generate_keys import handshake_responder
 from RelayX.core.handshake import do_handshake
 from RelayX.utils import config
@@ -42,9 +42,12 @@ async def handle_message(recipient_onion, envelope):
 
 async def route_envelope(sender, envelope):
     envelope_type = envelope["type"]
+
     if envelope.get("is_ack"):
+        msg_id = envelope.get('msg_id')
         await ack_queue.put(envelope)
-        await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {envelope.get('msg_id')}\n")
+        await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {msg_id}\n")
+        asyncio.create_task(mark_delivered(msg_id))
         return
 
     if envelope_type == "msg":
@@ -86,7 +89,7 @@ async def process_outer(outer : dict):
         return
     recipient_username = await get_username(recipient_onion)
     if outer.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-        asyncio.create_task(handshake_responder(outer, user_onion, send_via_tor_transport))
+        await handshake_responder(outer, user_onion, send_via_tor_transport)
         if outer.get("type") == "HANDSHAKE_INIT":
             print(f"[HANDSHAKE]\nSent To  {recipient_username}")
         else:

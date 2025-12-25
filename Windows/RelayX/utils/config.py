@@ -16,6 +16,7 @@ PROXY = ("127.0.0.1", 9050)
 message_count = 0
 session_key = {}
 ack_dict = {}
+TOKEN_EXPIRY = 120
 
 # Paths & onion -----------
 

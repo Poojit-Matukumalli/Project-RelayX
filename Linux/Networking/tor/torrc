@@ -1,4 +1,0 @@
-SocksPort 127.0.0.1:9050
-
-HiddenServiceDir Networking/data/HiddenService
-HiddenServicePort 5050 127.0.0.1:5050
