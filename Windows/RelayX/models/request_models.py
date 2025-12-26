@@ -22,3 +22,8 @@ class DeleteAccont(BaseModel):
 
 class CreateToken(BaseModel):
     password : str
+
+class ReadToken(BaseModel):
+    token_path : str
+    password : str
+    display_name : str

@@ -63,7 +63,7 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> s
 
 # ----------------------------------------------------------------------------------------------------
 
-def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX") -> str: 
+def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX-Message-AD|") -> str: 
     # Decrypts the urlsafe-base64 (nonce || ciphertext). On failure, this thing returns empty string.
     try:
         payload = base64.urlsafe_b64decode(encoded)

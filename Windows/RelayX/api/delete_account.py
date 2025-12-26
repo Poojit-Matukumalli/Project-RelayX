@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 import os, sys
+from plyer import notification
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) 
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -15,4 +16,5 @@ async def delete_account(req : DeleteAccont):
     if not req.confirm:
         return {"status": "Auth not completed"}
     await perform_account_deletion()
-    return {"status":"Success", "msg" : "Restart the app for the changes to take place"}
+    notification.notify(title="RelayX Core : Account Deletion successful.", message="Your RelayX Account has been deleted. Restart the app to setup a new Account.", timeout=4)
+    return

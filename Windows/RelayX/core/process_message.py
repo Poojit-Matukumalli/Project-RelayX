@@ -1,4 +1,5 @@
 import asyncio, msgpack, os, sys
+from plyer import notification
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -15,15 +16,27 @@ from RelayX.utils import config
 from RelayX.utils.queue import state_queue
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
 from utilities.encryptdecrypt.shield_crypto import verify_AEAD_envelope
+from cryptography.exceptions import InvalidTag
 
 session_key = config.session_key
 blocked_contacts = config.blocked_users 
+
+def _log_task_exception(task):
+    try:
+        task.result()
+    except Exception as e:
+        print("[ERROR]\n",e)
+
+def run_and_log(coro):
+    task = asyncio.create_task(coro)
+    task.add_done_callback(_log_task_exception)
+    return task
 
 async def handle_message(recipient_onion, envelope):
     recipient_username = await get_username(recipient_onion)
     msg_id = envelope.get("msg_id")
     msg = envelope.get("payload", "")
-    decrypted = decrypt_message(config.session_key.get(recipient_onion), msg)
+    decrypted = asyncio.to_thread(decrypt_message, config.session_key.get(recipient_onion), msg)
     await incoming_queue.put(msg_id)
     await add_message(user_onion, recipient_onion, decrypted, msg_id)
     if decrypted:     
@@ -35,9 +48,9 @@ async def handle_message(recipient_onion, envelope):
             "stap": envelope.get("stap"),
             "is_ack": True,
         }
-        asyncio.create_task(send_via_tor(recipient_onion,5050, ack_env, PROXY))
+        run_and_log(send_via_tor(recipient_onion,5050, ack_env, PROXY))
     else:
-        print("[DECRYPT ERROR]\nDecryption was unsuccessful")
+        notification.notify(title="RelayX Core : [Warn]", message=f"A message from {recipient_username} failed to Decrypt.", timeout=4)
 
 
 async def route_envelope(sender, envelope):
@@ -47,7 +60,7 @@ async def route_envelope(sender, envelope):
         msg_id = envelope.get('msg_id')
         await ack_queue.put(envelope)
         await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {msg_id}\n")
-        asyncio.create_task(mark_delivered(msg_id))
+        run_and_log(mark_delivered(msg_id))
         return
 
     if envelope_type == "msg":
@@ -68,15 +81,18 @@ async def route_envelope(sender, envelope):
 async def process_encrypted(recipient_onion, outer):
     key = session_key.get(recipient_onion)
     if not key:
-        asyncio.create_task(do_handshake(user_onion, recipient_onion, send_via_tor_transport))
+        run_and_log(do_handshake(user_onion, recipient_onion, send_via_tor_transport))
         return
     try:
         inner = verify_AEAD_envelope(outer["sealed_envelope"], key)
         envelope = msgpack.unpackb(inner, raw=False)
-    except Exception as e:
-        print("[AEAD DECRYPT ERROR]\nUnable to Decrypt AEAD envelope. Please restart the app\n", e)
+    except InvalidTag:
+        notification.notify(title="RelayX Core: [Severe]. Possible Interception.", message=f"A message from {await get_username(recipient_onion)} was tampered with. Restart the Network service.", timeout=4)
         return
-    asyncio.create_task(route_envelope(recipient_onion, envelope))
+    except Exception:
+        notification.notify(title="RelayX Core: [Moderate]", message=f"Message from {await get_username(recipient_onion)} Failed to process.", timeout=4)
+        return
+    run_and_log(route_envelope(recipient_onion, envelope))
 
 
 async def process_outer(outer : dict):
@@ -95,4 +111,4 @@ async def process_outer(outer : dict):
         else:
             print(f"[HANDSHAKE] Received from {recipient_username}")
         return
-    asyncio.create_task(process_encrypted(recipient_onion, outer))
+    run_and_log(process_encrypted(recipient_onion, outer))

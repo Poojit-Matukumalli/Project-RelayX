@@ -1,5 +1,5 @@
-from fastapi import APIRouter   ;   import sys, os
-import asyncio, os
+from fastapi import APIRouter   ;   from plyer import notification
+import asyncio, os, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
@@ -16,6 +16,7 @@ router = APIRouter()
 @router.post("/init")
 async def init_backend():
     if not user_onion:
+        notification.notify(title="RelayX Core: [Severe]", message=f"Unable to load your Networking Identity. Please restart the Network service", timeout=4)
         return {"Error" : "Networking Identity not found"}
     os.chdir(PROJECT_ROOT)
     start_tor()

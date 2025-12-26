@@ -5,10 +5,10 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(ROOT, '..', '..')
 sys.path.insert(0, PROJECT_ROOT)
 
-from RelayX.utils.config import user_onion, TOKEN_EXPIRY
+from RelayX.utils.config import user_onion
 from utilities.encryptdecrypt.token_crypto import encrypt_token_bytes, decrypt_token_bytes
 from RelayX.database.crud import burn_token, add_token
-
+from RelayX.database.crud import add_user
 
 def token_envelope(password : bytes):
     onion = encrypt_token_bytes(password, user_onion.encode())
@@ -47,15 +47,13 @@ async def create_token(password : str):
     except Exception as e:
         return "Fail"
     
-async def read_token(filepath, password):
+async def read_token(filepath, password, display_name):
     with open(filepath, "r") as f:
         ciphertext = f.read()
     try:
         decrypted = decrypt_token_bytes(ciphertext, password)
-        cipher = msgpack.unpackb(decrypted, raw=False)
-        print(cipher)
-        onione = cipher.get("content")
-        onion = decrypt_token_bytes(onione, password)
-        print(onion)
+        plain_bytes = msgpack.unpackb(decrypted, raw=False)
+        onion = decrypt_token_bytes(plain_bytes.get("content"), password)
+        await add_user(onion, display_name)
     except Exception as e:
-        pass
+        return

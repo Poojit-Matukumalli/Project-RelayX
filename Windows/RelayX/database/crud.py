@@ -29,10 +29,10 @@ def burn_file(filepath : Path):
         pass 
 
 
-async def add_user(onion : str, display_name :str, email : str):
+async def add_user(onion : str, display_name :str):
     async with async_session() as session:
         async with session.begin():
-            user = User(onion=onion,display_name=display_name, email=email)
+            user = User(onion=onion,display_name=display_name)
             session.add(user)
 
 async def get_user(onion :str):

@@ -10,3 +10,4 @@ pydantic==2.12.4
 msgpack==1.1.2
 orjson==3.11.5
 argon2-cffi==25.1.0
+plyer==2.1.0

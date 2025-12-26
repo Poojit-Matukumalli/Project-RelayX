@@ -9,6 +9,7 @@ from RelayX.database.crud import fetch_blocked_contacts
 
 async def load_blocked():
     config.blocked_users = set(await fetch_blocked_contacts())
+    
 async def load_onion():
     addr_file = os.path.join(PROJECT_ROOT, "Networking", "data", "HiddenService","hostname")
     if not os.path.exists(addr_file):
