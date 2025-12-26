@@ -10,7 +10,8 @@ from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
 from RelayX.database.crud import add_message, get_username, mark_delivered
-from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator
+from Keys.public_key_private_key.generate_keys import handshake_responder
+from RelayX.core.handshake import do_handshake
 from RelayX.utils import config
 from RelayX.utils.queue import state_queue
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
@@ -80,7 +81,7 @@ async def route_envelope(sender, envelope):
 async def process_encrypted(recipient_onion, outer):
     key = session_key.get(recipient_onion)
     if not key:
-        run_and_log(handshake_initiator(user_onion, recipient_onion, send_via_tor_transport))
+        run_and_log(do_handshake(user_onion, recipient_onion, send_via_tor_transport))
         return
     try:
         inner = verify_AEAD_envelope(outer["sealed_envelope"], key)
@@ -91,7 +92,7 @@ async def process_encrypted(recipient_onion, outer):
     except Exception:
         notification.notify(title="RelayX Core: [Moderate]", message=f"Message from {await get_username(recipient_onion)} Failed to process.", timeout=4)
         return
-    run_and_log(route_envelope(recipient_onion, envelope))
+    await route_envelope(recipient_onion, envelope)
 
 
 async def process_outer(outer : dict):
@@ -104,10 +105,13 @@ async def process_outer(outer : dict):
         return
     recipient_username = await get_username(recipient_onion)
     if outer.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-        run_and_log(handshake_responder(outer, user_onion, send_via_tor_transport))
+        try:
+            await asyncio.wait_for(handshake_responder(outer, user_onion, send_via_tor_transport), timeout=25)
+        except asyncio.TimeoutError:
+            pass
         if outer.get("type") == "HANDSHAKE_INIT":
             print(f"[HANDSHAKE]\nSent To  {recipient_username}")
         else:
             print(f"[HANDSHAKE] Received from {recipient_username}")
         return
-    run_and_log(process_encrypted(recipient_onion, outer))
+    await process_encrypted(recipient_onion, outer)

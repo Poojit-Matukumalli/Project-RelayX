@@ -12,7 +12,7 @@ from RelayX.core.handshake import do_handshake
 
 async def ack_relay_send(message, user_onion, recipient_onion):
     msg_id = str(uuid.uuid4())
-    for Attempt in range(3):
+    for Attempt in range(5):
         session_key = config.session_key.get(recipient_onion)
         if not session_key:
             await asyncio.wait_for(do_handshake(user_onion, recipient_onion, send_via_tor_transport), timeout=20)
