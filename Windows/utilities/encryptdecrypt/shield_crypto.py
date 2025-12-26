@@ -2,7 +2,7 @@
 
 Helpers for Encrypt and decrypt functions
 """
-import os, base64
+import os, base64, traceback
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
@@ -48,7 +48,7 @@ def verify_AEAD_envelope(payload, session_key):
 # DO NOT CHANGE ASSOCIATED DATA UNLESS ALL YOUR CONTACTS DO THE SAME.
 # CHANGING IT WILL CAUSE DECRYPTION COMMITTING SUICIDE LIKE MY SANITY.
 
-def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> str: 
+def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX-Message-AD|Layer-0") -> str: 
     # Encrypts the plaintext using AES-GCM and returns urlsafe-base64 str.
     try:
         aesgcm = AESGCM(key)
@@ -63,7 +63,7 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX") -> s
 
 # ----------------------------------------------------------------------------------------------------
 
-def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX-Message-AD|") -> str: 
+def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX-Message-AD|Layer-0") -> str: 
     # Decrypts the urlsafe-base64 (nonce || ciphertext). On failure, this thing returns empty string.
     try:
         payload = base64.urlsafe_b64decode(encoded)
@@ -77,4 +77,5 @@ def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX-Message-
         return plaintext.decode()
     except Exception as e:
         print(f"[SHIELD DECRYPT ERROR]")
+        traceback.print_exc()
         return ""

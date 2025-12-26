@@ -10,8 +10,7 @@ from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
 from RelayX.database.crud import add_message, get_username, mark_delivered
-from Keys.public_key_private_key.generate_keys import handshake_responder
-from RelayX.core.handshake import do_handshake
+from Keys.public_key_private_key.generate_keys import handshake_responder, handshake_initiator
 from RelayX.utils import config
 from RelayX.utils.queue import state_queue
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
@@ -36,7 +35,7 @@ async def handle_message(recipient_onion, envelope):
     recipient_username = await get_username(recipient_onion)
     msg_id = envelope.get("msg_id")
     msg = envelope.get("payload", "")
-    decrypted = asyncio.to_thread(decrypt_message, config.session_key.get(recipient_onion), msg)
+    decrypted = await asyncio.to_thread(decrypt_message, config.session_key.get(recipient_onion), msg)
     await incoming_queue.put(msg_id)
     await add_message(user_onion, recipient_onion, decrypted, msg_id)
     if decrypted:     
@@ -48,7 +47,7 @@ async def handle_message(recipient_onion, envelope):
             "stap": envelope.get("stap"),
             "is_ack": True,
         }
-        run_and_log(send_via_tor(recipient_onion,5050, ack_env, PROXY))
+        await send_via_tor(recipient_onion,5050, ack_env, PROXY)
     else:
         notification.notify(title="RelayX Core : [Warn]", message=f"A message from {recipient_username} failed to Decrypt.", timeout=4)
 
@@ -81,7 +80,7 @@ async def route_envelope(sender, envelope):
 async def process_encrypted(recipient_onion, outer):
     key = session_key.get(recipient_onion)
     if not key:
-        run_and_log(do_handshake(user_onion, recipient_onion, send_via_tor_transport))
+        run_and_log(handshake_initiator(user_onion, recipient_onion, send_via_tor_transport))
         return
     try:
         inner = verify_AEAD_envelope(outer["sealed_envelope"], key)
@@ -105,7 +104,7 @@ async def process_outer(outer : dict):
         return
     recipient_username = await get_username(recipient_onion)
     if outer.get("type") in ["HANDSHAKE_INIT", "HANDSHAKE_RESP"]:
-        await handshake_responder(outer, user_onion, send_via_tor_transport)
+        run_and_log(handshake_responder(outer, user_onion, send_via_tor_transport))
         if outer.get("type") == "HANDSHAKE_INIT":
             print(f"[HANDSHAKE]\nSent To  {recipient_username}")
         else:
