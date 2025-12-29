@@ -1,4 +1,4 @@
-import os, sys, asyncio, time, uuid, msgpack, secrets, traceback
+import os, sys, asyncio, time, uuid, msgpack, secrets
 from pathlib import Path
 
 ROOT = os.path.dirname(os.path.abspath(__file__))

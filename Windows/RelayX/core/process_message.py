@@ -5,7 +5,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from RelayX.utils.queue import incoming_queue, ack_queue
+from RelayX.utils.queue import incoming_queue, pending_ack, pending_ack_lock
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
@@ -32,6 +32,8 @@ def run_and_log(coro):
     task.add_done_callback(_log_task_exception)
     return task
 
+#----- Layer 3, Encrypted message handling -------------------------------------------------------------------------------
+
 async def handle_message(recipient_onion, envelope):
     recipient_username = await get_username(recipient_onion)
     msg_id = envelope.get("msg_id")
@@ -52,19 +54,22 @@ async def handle_message(recipient_onion, envelope):
     else:
         notification.notify(title="RelayX Core : [Warn]", message=f"A message from {recipient_username} failed to Decrypt.", timeout=4)
 
+#----- Layer 2, Routing to functions.--------------------------------------------------------------------------------------
 
 async def route_envelope(sender, envelope):
     envelope_type = envelope["type"]
 
     if envelope.get("is_ack"):
         msg_id = envelope.get('msg_id')
-        await ack_queue.put(envelope)
+        event = pending_ack.get(msg_id)
+        if event:
+            event.set()
         await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {msg_id}\n")
         run_and_log(mark_delivered(msg_id))
         return
 
     if envelope_type == "msg":
-        await handle_message(sender, envelope)
+        await handle_message(sender, envelope) # GOTO Layer 3
     
     if envelope_type == "FILE_TRANSFER_INIT":
         await handle_file_init(envelope)
@@ -77,6 +82,8 @@ async def route_envelope(sender, envelope):
     elif envelope_type == "FILE_ACK":
         await handle_file_chunk_ack(envelope)
         return
+
+#----- Layer 1, Encrypted data processing ------------------------------------------------------------------------------
 
 async def process_encrypted(recipient_onion, outer):
     key = session_key.get(recipient_onion)
@@ -92,8 +99,9 @@ async def process_encrypted(recipient_onion, outer):
     except Exception:
         notification.notify(title="RelayX Core: [Moderate]", message=f"Message from {await get_username(recipient_onion)} Failed to process.", timeout=4)
         return
-    await route_envelope(recipient_onion, envelope)
+    await route_envelope(recipient_onion, envelope) # GOTO Layer 2
 
+#----- Layer 0, Handshake handling and outer env handling.-----------------------------------------------------------------
 
 async def process_outer(outer : dict):
     sender = outer.get("from")
@@ -110,8 +118,8 @@ async def process_outer(outer : dict):
         except asyncio.TimeoutError:
             pass
         if outer.get("type") == "HANDSHAKE_INIT":
-            print(f"[HANDSHAKE]\nSent To  {recipient_username}")
+            print(f"[HANDSHAKE_INIT]\nSent To  {recipient_username}")
         else:
-            print(f"[HANDSHAKE] Received from {recipient_username}")
+            print(f"[HANDSHAKE_RESP] Received from {recipient_username}")
         return
-    await process_encrypted(recipient_onion, outer)
+    await process_encrypted(recipient_onion, outer) # GOTO: Layer 1

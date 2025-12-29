@@ -10,6 +10,7 @@ sys.path.insert(0, PROJECT_ROOT)
 
 
 from RelayX.utils import config
+from RelayX.utils.queue import rotation_lock
 from utilities.encryptdecrypt.shield_crypto import derive_shield_key
 # ---------------- Pending handshakes ---------------------------------------------
 
@@ -81,9 +82,11 @@ async def handshake_initiator(user_onion: str, peer_onion: str, send_via_tor_tra
         peer_pub_bytes = b64_decode(resp["pub"])
         nonce_b = b64_decode(resp["nonce_b"])
         shared_key = derive_shared_key(my_private, peer_pub_bytes)
-        config.session_key[peer_onion] = derive_shield_key(shared_key, nonce_a, nonce_b)
-        return config.session_key[peer_onion]
+        async with rotation_lock:
+            config.session_key[peer_onion] = derive_shield_key(shared_key, nonce_a, nonce_b)
+            return config.session_key[peer_onion]
     except asyncio.TimeoutError:
+        print("TIMEOUT")
         return None
     finally:
         pending_handshakes.pop(peer_onion, None)
@@ -104,8 +107,9 @@ async def handshake_responder(envelope: dict, user_onion: str, send_via_tor_tran
         resp_msg = make_resp_message(my_public, user_onion, envelope.get("nonce"), nonce_b)
         await send_via_tor_transport(peer, 5050, resp_msg, proxy=proxy)
         shared_key = derive_shared_key(my_private, peer_public)
-        config.session_key[peer] = derive_shield_key(shared_key, nonce_a, nonce_b)
-        return config.session_key[peer]
+        async with rotation_lock:
+            config.session_key[peer] = derive_shield_key(shared_key, nonce_a, nonce_b)
+            return config.session_key[peer]
     elif type == "HANDSHAKE_RESP":
         if peer in pending_handshakes:
             _, _, future = pending_handshakes[peer]

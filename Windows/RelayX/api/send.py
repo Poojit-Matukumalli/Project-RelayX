@@ -9,7 +9,7 @@ from RelayX.models.request_models import SendModel
 from RelayX.utils.config import ROTATE_AFTER_MESSAGES, user_onion
 from Keys.public_key_private_key.generate_keys import handshake_initiator, make_init_message
 from RelayX.utils import config
-from RelayX.core.send_msg import send_to_peer
+from RelayX.core.send_msg import ack_relay_send
 from RelayX.database.crud import add_message
 import uuid
 
@@ -22,8 +22,11 @@ async def send_message(model : SendModel):
     recipient_onion = model.recipient_onion
     if recipient_onion not in config.session_key:
         await handshake_initiator(user_onion, recipient_onion, send_via_tor_transport, make_init_message)
+    if config.session_key[recipient_onion] is None:
+        print("ACCESSED")
+        return
     plaintext = model.msg
-    await send_to_peer(recipient_onion, user_onion, plaintext, msg_id)
+    await ack_relay_send(plaintext, user_onion, recipient_onion, msg_id)
     await add_message(user_onion, recipient_onion, plaintext, msg_id)
     config.message_count += 1
     if config.message_count >= ROTATE_AFTER_MESSAGES:

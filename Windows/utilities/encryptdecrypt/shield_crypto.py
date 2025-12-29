@@ -59,7 +59,8 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX-Messag
         return base64.urlsafe_b64encode(payload).decode()
     except Exception as e:
         print(f"[SHIELD ENCRYPT ERROR], {e}")
-        return ""
+        traceback.print_exc()
+        return
 
 # ----------------------------------------------------------------------------------------------------
 
@@ -77,5 +78,4 @@ def shield_decrypt(key: bytes, encoded: str, associated_data = b"RelayX-Message-
         return plaintext.decode()
     except Exception as e:
         print(f"[SHIELD DECRYPT ERROR]")
-        traceback.print_exc()
-        return ""
+        return
