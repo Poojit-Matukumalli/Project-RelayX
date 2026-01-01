@@ -110,19 +110,19 @@ async def send_file(chunks : dict , target_onion : str, filename : str):
 
     msg_id = str(uuid.uuid4())
     total_chunks = len(chunks)
-    #key = session_key[target_onion]
-    #if not key:
-        #print(f"[FILE_SEND_ERROR] Cannot send {filename}.\nNo Session key exists for {target_onion}")
-        #return
+    key = session_key[target_onion]
+    if not key:
+        print(f"[FILE_SEND_ERROR] Cannot send {filename}.\nNo Session key exists for {target_onion}")
+        return
     
-    #encrypted_chunks = encrypt_chunks(chunks, key)
+    encrypted_chunks = encrypt_chunks(chunks, key)
     
     async with pending_lock:
         config.pending_transfers[msg_id] = {
             "to" : target_onion,
             "chunks" : {idx : 
                         {"data" : chunk_data,"acked" : False, "retries" : 0,
-                            "sent_ts" : 0} for idx, chunk_data in chunks.items()},
+                            "sent_ts" : 0} for idx, chunk_data in encrypted_chunks.items()},
             "next_idx" : 0,
             "last_acked" : -1,
             "window" : 16,
@@ -130,7 +130,6 @@ async def send_file(chunks : dict , target_onion : str, filename : str):
             "ts" : int(time.time()),
             "last_sent" : -1
         }
-
     # Details so the recipient can join chunks
     metadata_packet = file_init_metadata(total_chunks, filename, msg_id)
     await send_via_tor(target_onion, LISTEN_PORT, metadata_packet, PROXY)

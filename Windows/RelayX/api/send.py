@@ -23,7 +23,6 @@ async def send_message(model : SendModel):
     if recipient_onion not in config.session_key:
         await handshake_initiator(user_onion, recipient_onion, send_via_tor_transport, make_init_message)
     if config.session_key[recipient_onion] is None:
-        print("ACCESSED")
         return
     plaintext = model.msg
     await ack_relay_send(plaintext, user_onion, recipient_onion, msg_id)

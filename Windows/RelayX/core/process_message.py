@@ -52,7 +52,7 @@ async def handle_message(recipient_onion, envelope):
         }
         await send_via_tor(recipient_onion,5050, ack_env, PROXY)
     else:
-        notification.notify(title="RelayX Core : [Warn]", message=f"A message from {recipient_username} failed to Decrypt.", timeout=4)
+        asyncio.to_thread(notification.notify(title="RelayX Core : [Warn]", message=f"A message from {recipient_username} failed to Decrypt.", timeout=4))
 
 #----- Layer 2, Routing to functions.--------------------------------------------------------------------------------------
 
@@ -94,10 +94,10 @@ async def process_encrypted(recipient_onion, outer):
         inner = verify_AEAD_envelope(outer["sealed_envelope"], key)
         envelope = msgpack.unpackb(inner, raw=False)
     except InvalidTag:
-        notification.notify(title="RelayX Core: [Severe]. Possible Interception.", message=f"A message from {await get_username(recipient_onion)} was tampered with. Restart the Network service.", timeout=4)
+        asyncio.to_thread(notification.notify(title="RelayX Core: [Severe]. Possible Interception.", message=f"A message from {await get_username(recipient_onion)} was tampered with. Restart the Network service.", timeout=4))
         return
     except Exception:
-        notification.notify(title="RelayX Core: [Moderate]", message=f"Message from {await get_username(recipient_onion)} Failed to process.", timeout=4)
+        asyncio.to_thread(notification.notify(title="RelayX Core: [Moderate]", message=f"Message from {await get_username(recipient_onion)} Failed to process.", timeout=4))
         return
     await route_envelope(recipient_onion, envelope) # GOTO Layer 2
 
@@ -106,7 +106,6 @@ async def process_encrypted(recipient_onion, outer):
 async def process_outer(outer : dict):
     sender = outer.get("from")
     if not isinstance(sender, str):
-        print("string")
         return
     recipient_onion = sender.strip().replace("\n", "")
     if recipient_onion in blocked_contacts:

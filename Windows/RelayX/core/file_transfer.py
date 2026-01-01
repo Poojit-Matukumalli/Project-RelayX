@@ -17,6 +17,11 @@ from utilities.network.Client_RelayX import send_via_tor
 CHUNK_SIZE = 1024 * 1024
 WINDOW_SIZE = 16
 
+def write_chunk(path, idx, decrypted):
+    with open(path, "r+b") as f:
+        f.seek(idx * CHUNK_SIZE)
+        f.write(decrypted)
+
 async def file_transfer(filepath, target_onion):
     filename = os.path.basename(filepath)
     #await do_handshake(user_onion, target_onion, send_via_tor)
@@ -71,13 +76,9 @@ async def handle_file_chunk(packet : dict):
         
         path = transfer["path"]
         filename = transfer["file_name"]
-
     key = session_key.get(sender_onion)
-    #decrypted = decrypt_bytes(key, encrypted_data)
-
-    with open(path, "r+b") as f:
-        f.seek(idx * CHUNK_SIZE)
-        f.write(encrypted_data)
+    decrypted = decrypt_bytes(key, encrypted_data)
+    await asyncio.to_thread(write_chunk, path, idx, decrypted)
 
     async with pending_lock:
         transfer["received"].add(idx)

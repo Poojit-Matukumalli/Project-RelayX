@@ -2,7 +2,7 @@
 
 Helpers for Encrypt and decrypt functions
 """
-import os, base64, traceback
+import os, base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
@@ -59,7 +59,6 @@ def shield_encrypt(key: bytes, plaintext: str, associated_data = b"RelayX-Messag
         return base64.urlsafe_b64encode(payload).decode()
     except Exception as e:
         print(f"[SHIELD ENCRYPT ERROR], {e}")
-        traceback.print_exc()
         return
 
 # ----------------------------------------------------------------------------------------------------

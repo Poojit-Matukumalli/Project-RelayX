@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from api import init, send, recieve, clear_chat, delete_message, delete_account, blocked_state
-from api import fetch_history, fetch_contacts, state_ws, file_sending, tokens_api
+from api import fetch_history, fetch_contacts, state_ws, file_sending, tokens_api, shutdown
 
 app = FastAPI()
 
@@ -32,6 +32,7 @@ app.include_router(file_sending.router)
 app.include_router(delete_account.router)
 app.include_router(blocked_state.router)
 app.include_router(tokens_api.router)
+app.include_router(shutdown.router)
 
 @app.get("/status")
 def status():
