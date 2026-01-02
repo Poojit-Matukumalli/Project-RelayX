@@ -1,7 +1,7 @@
-import asyncio, subprocess, os, sys
+import asyncio, os
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from utilities.network.network_service import tor_hostname_creation
 from RelayX.utils import config

@@ -1,10 +1,5 @@
 from fastapi import APIRouter
-import os, sys
 from plyer import notification
-
-ROOT = os.path.dirname(os.path.abspath(__file__)) 
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.models.request_models import DeleteAccont
 from RelayX.core.delete_account import perform_account_deletion

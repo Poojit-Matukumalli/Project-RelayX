@@ -7,16 +7,10 @@ thats it. Go read the code 🙏
 # ==================== Imports =========================================================================================
 
 import json, random, aiohttp_socks as asocks
-import os, time, sys, struct, msgpack, asyncio
-# ============================== Dynamic imports =======================================================================
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import time, struct, msgpack, asyncio
 
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
-from Keys.public_key_private_key.generate_keys import handshake_responder
 from RelayX.utils.config import user_onion, relay_file, session_key
 from utilities.encryptdecrypt.shield_crypto import derive_AEAD_envelope
 

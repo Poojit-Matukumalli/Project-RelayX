@@ -1,8 +1,7 @@
-import os, sys
+import os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base

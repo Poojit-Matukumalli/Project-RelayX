@@ -1,9 +1,3 @@
-import os, sys
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
 from RelayX.database.crud import fetch_by_id
 from RelayX.utils.config import user_onion
 from RelayX.core.send_msg import ack_relay_send

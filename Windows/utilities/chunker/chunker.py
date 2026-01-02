@@ -2,14 +2,11 @@
 This is the raw chunker module that chunks and returns the chunk index and file content (images, not txt) in bytes.
 
 """
-
-import ctypes
+import ctypes, os
 from ctypes import c_int, c_size_t, c_char_p, POINTER, Structure
-import sys, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 class Chunk(Structure):
     _fields_ = [("index", c_int),

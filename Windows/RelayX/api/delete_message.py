@@ -1,9 +1,4 @@
 from fastapi import APIRouter, HTTPException
-import sys, os
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.database.crud import delete_message
 from RelayX.models.request_models import DeleteChat

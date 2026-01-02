@@ -1,11 +1,7 @@
-import asyncio, msgpack, os, sys
+import asyncio, msgpack
 from plyer import notification
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
-from RelayX.utils.queue import incoming_queue, pending_ack, pending_ack_lock
+from RelayX.utils.queue import incoming_queue, pending_ack
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport

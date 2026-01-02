@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from api import init, send, recieve, clear_chat, delete_message, delete_account, blocked_state
-from api import fetch_history, fetch_contacts, state_ws, file_sending, tokens_api, shutdown
+from RelayX.api import init, send, recieve, clear_chat, delete_message, delete_account, blocked_state
+from RelayX.api import fetch_history, fetch_contacts, state_ws, file_sending, tokens_api, shutdown
 
 app = FastAPI()
 
@@ -39,4 +39,4 @@ def status():
     return {"Online":True}
 
 if __name__ == "__main__":
-    uvicorn.run("RelayX.main:app", host="127.0.0.1", port = 8000)
+    uvicorn.run("main:app", host="127.0.0.1", port = 8000)

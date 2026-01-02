@@ -1,9 +1,5 @@
-import os, sys, asyncio, time, uuid, msgpack, secrets
+import os, asyncio, time, uuid, msgpack, secrets
 from pathlib import Path
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.join(ROOT, '..', '..')
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.config import user_onion
 from utilities.encryptdecrypt.token_crypto import encrypt_token_bytes, decrypt_token_bytes

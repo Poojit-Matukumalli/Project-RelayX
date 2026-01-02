@@ -1,9 +1,8 @@
-import os, sys, shutil, asyncio, signal
+import os, shutil, asyncio, signal
 from plyer import notification
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.core.tor_bootstrap import stop_tor
 

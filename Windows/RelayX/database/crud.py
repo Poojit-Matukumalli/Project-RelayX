@@ -1,12 +1,7 @@
 from sqlalchemy.future import select
 from sqlalchemy import desc
-from sqlalchemy import text
-import os,sys, time
+import os, time
 from pathlib import Path
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.database.db import async_session
 from RelayX.database.models import User, Message, Tokens

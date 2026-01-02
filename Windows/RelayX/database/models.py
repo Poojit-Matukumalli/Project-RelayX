@@ -1,10 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, func
-import sys, os, time
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
+import time
 
 from RelayX.database.db import Base, engine
 

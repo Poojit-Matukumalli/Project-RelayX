@@ -1,9 +1,5 @@
 from fastapi import APIRouter   ;   from plyer import notification
-import asyncio, os, sys
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import asyncio, os
 
 from RelayX.database.models import init_db
 from RelayX.core.inbound import inbound_listener
@@ -18,7 +14,7 @@ async def init_backend():
     if not user_onion:
         notification.notify(title="RelayX Core: [Severe]", message=f"Unable to load your Networking Identity. Please restart the Network service", timeout=4)
         return {"Error" : "Networking Identity not found"}
-    os.chdir(PROJECT_ROOT)
+    os.chdir(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..'))
     start_tor()
     asyncio.create_task(init_db())
     asyncio.create_task(cleanup_tokens())

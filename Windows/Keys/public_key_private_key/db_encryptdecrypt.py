@@ -1,9 +1,4 @@
 from cryptography.fernet import Fernet
-import sys, os
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.keyring_manager import keyring_load_key
 

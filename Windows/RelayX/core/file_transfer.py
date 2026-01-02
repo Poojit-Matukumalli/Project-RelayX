@@ -1,8 +1,4 @@
-import os, sys, time, base64, asyncio, orjson
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import os, time, asyncio, orjson
 
 from utilities.chunker.chunker import chunk_file
 from RelayX.core.chunk_file import send_file

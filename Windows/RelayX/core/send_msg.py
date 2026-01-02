@@ -1,8 +1,4 @@
-import os, asyncio, sys
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import asyncio
 
 from utilities.network.Client_RelayX import relay_send
 from RelayX.utils import queue

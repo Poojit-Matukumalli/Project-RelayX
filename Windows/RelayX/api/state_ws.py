@@ -1,9 +1,4 @@
 from fastapi import APIRouter, WebSocket
-import os, sys, asyncio
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.utils.queue import state_queue
 

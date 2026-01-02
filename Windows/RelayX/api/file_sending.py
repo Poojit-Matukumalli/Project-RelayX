@@ -1,9 +1,5 @@
-import os,sys, os
+import os
 from fastapi import APIRouter
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from RelayX.core.file_transfer import file_transfer
 

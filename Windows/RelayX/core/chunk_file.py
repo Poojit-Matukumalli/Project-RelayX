@@ -1,9 +1,5 @@
-import os, sys, time, uuid, asyncio
+import time, uuid, asyncio
 from multiprocessing import Pool
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 from utilities.network.Client_RelayX import send_via_tor
 from utilities.encryptdecrypt.encrypt_message import encrypt_bytes

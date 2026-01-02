@@ -1,9 +1,9 @@
-## Project RelayX
+## RelayX Messenger
 
 ***Built for Privacy, Funded by You.***
 
 If you are interested in setting up a RelayX of your own, check out [SETUP.md](GitHub-docs/SETUP.md).
-
+Also known as 'Project RelayX'
 Credits at [CREDITS.md](GitHub-docs/CREDITS.md). 
 
 ---

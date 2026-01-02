@@ -3,14 +3,7 @@
 Encrypts messages. uses helpers from shield crypto module
 Part of Project RelayX, By Poojit Matukumalli
 """
-
-import os,sys, base64
-
-# =============================== Dynamic imports ======================================================================
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import base64
 
 from utilities.encryptdecrypt.shield_crypto import shield_encrypt
 

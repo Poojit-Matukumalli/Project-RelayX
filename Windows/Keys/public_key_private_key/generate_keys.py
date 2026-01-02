@@ -1,13 +1,8 @@
 # ============================================== Imports ===================================================================
 
-import base64, os, time, asyncio, sys
+import base64, os, time, asyncio
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
 
 from RelayX.utils import config
 from RelayX.utils.queue import rotation_lock

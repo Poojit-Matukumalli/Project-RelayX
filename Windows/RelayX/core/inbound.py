@@ -1,8 +1,4 @@
-import asyncio, sys, os, struct, msgpack
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
+import asyncio, struct, msgpack
 
 from RelayX.core.process_message import process_outer
 

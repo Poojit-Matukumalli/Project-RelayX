@@ -1,10 +1,4 @@
 from fastapi import APIRouter
-import os, sys
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
 
 from RelayX.database.crud import async_session
 from RelayX.models.request_models import ClearChat

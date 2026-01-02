@@ -1,10 +1,4 @@
 from fastapi import APIRouter, HTTPException
-import os, sys
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
-
 
 from RelayX.models.request_models import ConnectModel
 from RelayX.database.crud import get_user, chat_history_load

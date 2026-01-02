@@ -1,13 +1,11 @@
-import os, asyncio, sys
+import os, asyncio
 
-# --------------------------- Dynamic imports ----------------------------------------------------------------------------
-
-ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
-sys.path.insert(0, PROJECT_ROOT)
 from RelayX.core.onion_loader import load_onion
 
 #-------------------------------------- Configs --------------------------------------------------------------------------
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
 
 ROTATE_INTERVAL = 600
 ROTATE_AFTER_MESSAGES = 25
