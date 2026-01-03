@@ -129,7 +129,7 @@ async def fetch_blocked_contacts() -> set[str]:
 async def fetch_contacts(current_onion) -> list[dict]:
     blocked_contacts = await fetch_blocked_contacts()
     async with async_session() as session:
-        result = await session.execute(select(User).where(User.onion != current_onion & User.onion not in blocked_contacts))
+        result = await session.execute(select(User).where((User.onion != current_onion) and (User.onion not in blocked_contacts)))
         users = result.scalars().all()
         return [
             {   

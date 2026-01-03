@@ -1,4 +1,4 @@
-import asyncio, uuid
+import asyncio, uuid, traceback
 from RelayX.database.crud import fetch_undelivered, fetch_contacts
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
 from RelayX.utils import config, queue
@@ -45,14 +45,15 @@ async def send_to_peers(contacts: list[dict]):
     async def handle_peer(contact: dict):
         async with sem:
             try:
-                if not config.session_key[contact.get("username")]:
+                if not config.session_key.get(contact["username"]):
                     await do_handshake(config.user_onion, contact.get("username"), send_via_tor_transport)
                 undelivered = await fetch_undelivered(contact.get("username"))
                 if not undelivered:
                     return
                 await ack_undelivered_send(undelivered, contact.get("username"), str(uuid.uuid4()))
             except Exception as e:
-                print(e)
+                traceback.print_exc()
+                print("Error", e)
                 return
     tasks = [asyncio.create_task(handle_peer(c)) for c in contacts]
     await asyncio.gather(*tasks)
