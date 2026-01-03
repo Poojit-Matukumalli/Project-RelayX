@@ -4,7 +4,7 @@ from RelayX.utils import config
 from RelayX.database.crud import add_message
 from utilities.network.Client_RelayX import send_via_tor
 
-async def proces_undelivered(envelope: dict):
+async def process_undelivered(envelope: dict):
     msg_id = envelope.get("msg_id")
     messages = envelope.get("msg", [])
     sender_onion = envelope.get("from")
