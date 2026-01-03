@@ -82,12 +82,19 @@ async def fetch_undelivered(recipient_onion : str):
     async with async_session() as session:
         result = await session.execute(select(Message).where(Message.recipient_onion == recipient_onion, Message.delivered == False))
         messages = result.scalars().all()
-        for message in messages:
-            message.delivered = True
-        await session.commit()
-        return messages
+        messages.reverse()
+        return [
+        {
+            "from" : m.sender_onion,
+            "to" : m.recipient_onion,
+            "msg" : db_decrypt(m.message),
+            "timestamp" : m.TIMESTAMP,
+            "msg_id" : m.msg_id
+        }
+        for m in messages
+    ]
 
-async def chat_history_load(user1 : str, user2 : str, before_ts = None,limit : int = 200):
+async def chat_history_load(user1 : str, user2 : str, before_ts = None,limit : int = 200) -> list[dict]:
     """Both user1 & user2 need to be their respective onions"""
     async with async_session() as session:
         query = select(Message).where(
@@ -114,21 +121,25 @@ async def chat_history_load(user1 : str, user2 : str, before_ts = None,limit : i
         for m in messages
     ]
     
-    
-async def fetch_contacts(current_onion):
+async def fetch_blocked_contacts() -> set[str]:
     async with async_session() as session:
-        result = await session.execute(select(User).where(User.onion != current_onion))
+        result = await session.execute(select(User).where(User.blocked.is_(True)))
+        return set(result.scalars().all())
+
+async def fetch_contacts(current_onion) -> list[dict]:
+    blocked_contacts = await fetch_blocked_contacts()
+    async with async_session() as session:
+        result = await session.execute(select(User).where(User.onion != current_onion & User.onion not in blocked_contacts))
         users = result.scalars().all()
         return [
             {   
                 "display_name" : user.display_name,
                 "username" : user.onion,
-                "email" : user.email
             }
             for user in users
         ]
     
-async def fetch_by_id(msg_id : str):
+async def fetch_by_id(msg_id : str) -> dict[str]:
     """Fetches a single message from the DB by UUID (msg_id)"""
     async with async_session() as session:
         result = await session.execute(select(Message).where(Message.msg_id == msg_id))
@@ -145,7 +156,7 @@ async def fetch_by_id(msg_id : str):
             "msg" : decrypted_text
         }
 
-async def delete_message(msg_id : str):
+async def delete_message(msg_id : str) -> bool:
     async with async_session() as session:
         async with session.begin():
             result = await session.execute(select(Message).where(Message.msg_id == msg_id))
@@ -156,11 +167,6 @@ async def delete_message(msg_id : str):
         await session.commit()
         return True
     
-async def fetch_blocked_contacts() -> set[str]:
-    async with async_session() as session:
-        result = await session.execute(select(User).where(User.blocked.is_(True)))
-        return set(result.scalars().all())
-
 async def set_block_status(onion : str, blocked_status : bool):
     async with async_session() as session:
         async with session.begin():

@@ -17,7 +17,6 @@ async def ack_relay_send(message: str, user_onion: str, recipient_onion: str, ms
                 await asyncio.wait_for(event.wait(), timeout=15)
                 return True
             except asyncio.TimeoutError:
-                event.clear()
                 continue
         return False
     finally:

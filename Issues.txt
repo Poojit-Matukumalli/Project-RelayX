@@ -1,0 +1,9 @@
+1. No undelivered deliver logic.
+
+2. Sometimes messages keep resending because of slow device.
+
+3. Somehwat unpredictable behavior when operating on tor.
+
+4. Latency.
+
+5. First message takes 5-15 seconds. Drop it to predictably 5-8s.

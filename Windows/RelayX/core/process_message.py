@@ -1,7 +1,8 @@
 import asyncio, msgpack
 from plyer import notification
+from cryptography.exceptions import InvalidTag
 
-from RelayX.utils.queue import incoming_queue, pending_ack
+from RelayX.utils.queue import incoming_queue, pending_ack, pending_ack_lock
 from utilities.encryptdecrypt.decrypt_message import decrypt_message
 from RelayX.utils.config import PROXY, user_onion
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
@@ -12,7 +13,7 @@ from RelayX.utils import config
 from RelayX.utils.queue import state_queue
 from RelayX.core.file_transfer import handle_file_chunk, handle_file_chunk_ack, handle_file_init
 from utilities.encryptdecrypt.shield_crypto import verify_AEAD_envelope
-from cryptography.exceptions import InvalidTag
+from RelayX.core.process_undelivered import process_undelivered
 
 session_key = config.session_key
 blocked_contacts = config.blocked_users 
@@ -57,7 +58,8 @@ async def route_envelope(sender, envelope):
 
     if envelope.get("is_ack"):
         msg_id = envelope.get('msg_id')
-        event = pending_ack.get(msg_id)
+        async with pending_ack_lock:
+            event = pending_ack.get(msg_id)
         if event:
             event.set()
         await state_queue.put(f"\n[ACK RECEIVED]\nMessage ID : {msg_id}\n")
@@ -78,6 +80,8 @@ async def route_envelope(sender, envelope):
     elif envelope_type == "FILE_ACK":
         await handle_file_chunk_ack(envelope)
         return
+    elif envelope_type == "UNDELIVERED":
+        await process_undelivered(envelope)
 
 #----- Layer 1, Encrypted data processing ------------------------------------------------------------------------------
 
@@ -100,6 +104,9 @@ async def process_encrypted(recipient_onion, outer):
 #----- Layer 0, Handshake handling and outer env handling.-----------------------------------------------------------------
 
 async def process_outer(outer : dict):
+    required = {"from", "sealed_envelope"}
+    if not required.issubset(outer):
+        return
     sender = outer.get("from")
     if not isinstance(sender, str):
         return

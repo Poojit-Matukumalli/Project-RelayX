@@ -6,6 +6,7 @@ from RelayX.core.inbound import inbound_listener
 from RelayX.core.tor_bootstrap import start_tor
 from RelayX.utils.config import user_onion
 from RelayX.database.crud import cleanup_tokens
+from RelayX.core.send_undelivered import undelivered_send
 
 router = APIRouter()
 
@@ -19,4 +20,5 @@ async def init_backend():
     asyncio.create_task(init_db())
     asyncio.create_task(cleanup_tokens())
     asyncio.create_task(inbound_listener())
+    asyncio.create_task(undelivered_send())
     return {"Status" : "Initialized", "user_onion" : user_onion}
