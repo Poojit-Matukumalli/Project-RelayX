@@ -83,16 +83,16 @@ async def fetch_undelivered(recipient_onion : str):
         result = await session.execute(select(Message).where(Message.recipient_onion == recipient_onion, Message.delivered == False))
         messages = result.scalars().all()
         messages.reverse()
-        return [
+        print( [
         {
             "from" : m.sender_onion,
             "to" : m.recipient_onion,
-            "msg" : db_decrypt(m.message),
+            "msg" : db_decrypt(m.message).decode(),
             "timestamp" : m.TIMESTAMP,
             "msg_id" : m.msg_id
         }
         for m in messages
-    ]
+    ])
 
 async def chat_history_load(user1 : str, user2 : str, before_ts = None,limit : int = 200) -> list[dict]:
     """Both user1 & user2 need to be their respective onions"""

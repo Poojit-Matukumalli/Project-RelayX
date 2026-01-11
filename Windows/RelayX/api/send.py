@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+import uuid, asyncio
 
 from utilities.network.Client_RelayX import send_via_tor_transport
 from RelayX.models.request_models import SendModel
@@ -7,12 +8,10 @@ from Keys.public_key_private_key.generate_keys import handshake_initiator, make_
 from RelayX.utils import config
 from RelayX.core.send_msg import ack_relay_send
 from RelayX.database.crud import add_message
-import uuid
 
 router = APIRouter()
 
-@router.post("/send")
-async def send_message(model : SendModel):
+async def _helper_send(model):
     global user_onion
     msg_id = str(uuid.uuid4())
     recipient_onion = model.recipient_onion
@@ -27,4 +26,9 @@ async def send_message(model : SendModel):
     if config.message_count >= ROTATE_AFTER_MESSAGES:
         await handshake_initiator(user_onion, recipient_onion, send_via_tor_transport, make_init_message)
         config.message_count = 0
+
+
+@router.post("/send")
+async def send_message(model : SendModel):
+    asyncio.create_task(_helper_send(model))
     return {"ok" : True}

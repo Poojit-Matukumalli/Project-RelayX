@@ -104,9 +104,6 @@ async def process_encrypted(recipient_onion, outer):
 #----- Layer 0, Handshake handling and outer env handling.-----------------------------------------------------------------
 
 async def process_outer(outer : dict):
-    required = {"from", "sealed_envelope"}
-    if not required.issubset(outer):
-        return
     sender = outer.get("from")
     if not isinstance(sender, str):
         return
@@ -124,4 +121,4 @@ async def process_outer(outer : dict):
         else:
             print(f"[HANDSHAKE_RESP] Received from {recipient_username}")
         return
-    await process_encrypted(recipient_onion, outer) # GOTO: Layer 1
+    asyncio.create_task(process_encrypted(recipient_onion, outer)) # GOTO: Layer 1

@@ -15,7 +15,7 @@ async def handle_incoming(reader, writer):
             print("[INBOUND_ERROR]\nNo envelope")
             return
         
-        asyncio.create_task(process_outer(outer))
+        await process_outer(outer)
     except Exception as e:
         print(f"[ERROR]\n{e}")
     finally:

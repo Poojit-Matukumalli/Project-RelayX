@@ -2,7 +2,7 @@
 
 2. Sometimes messages keep resending because of slow device.
 
-3. Somehwat unpredictable behavior when operating on tor.
+3. Somewhat unpredictable behavior when operating on tor.
 
 4. Latency.
 

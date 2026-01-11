@@ -3,7 +3,7 @@ from RelayX.database.crud import fetch_undelivered, fetch_contacts
 from utilities.network.Client_RelayX import send_via_tor, send_via_tor_transport
 from RelayX.utils import config, queue
 from utilities.encryptdecrypt.encrypt_message import encrypt_message
-from RelayX.core.handshake import do_handshake
+from Keys.public_key_private_key.generate_keys import handshake_initiator, make_init_message
 
 def make_envelope(msg_id, recipient_onion, message_content):
     return {
@@ -25,7 +25,8 @@ async def ack_undelivered_send(undelivered_env: dict,recipient_onion: str, msg_i
     try:
         for Attempt in range(5):      
             for msg_dict in undelivered_env:
-                msg_dict["msg"] = encrypt_message(config.session_key[recipient_onion], msg_dict.get("msg"))
+                msg : bytes = msg_dict.get("msg")
+                msg_dict["msg"] = encrypt_message(config.session_key[recipient_onion], msg.decode())
             env = make_envelope(msg_id, recipient_onion, undelivered_env)
             await send_via_tor(recipient_onion, config.LISTEN_PORT, env, config.PROXY)
             try:
@@ -46,7 +47,7 @@ async def send_to_peers(contacts: list[dict]):
         async with sem:
             try:
                 if not config.session_key.get(contact["username"]):
-                    await do_handshake(config.user_onion, contact.get("username"), send_via_tor_transport)
+                    await handshake_initiator(config.user_onion, contact.get("username"), send_via_tor_transport, make_init_message)
                 undelivered = await fetch_undelivered(contact.get("username"))
                 if not undelivered:
                     return
