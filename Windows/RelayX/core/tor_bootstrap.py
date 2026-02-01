@@ -2,6 +2,10 @@ import subprocess, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, "..", ".."))
+green = "\033[0;32m"
+cyan = "\033[0;36m"
+reset = "\033[0m"
+
 
 tor_process : subprocess.Popen | None = None
 
@@ -13,6 +17,7 @@ def start_tor():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, 
     )
+    print(f"{green}INFO{reset}:     [{cyan}Tor{reset}] RelayX transport started.")
     
 def stop_tor():
     global tor_process

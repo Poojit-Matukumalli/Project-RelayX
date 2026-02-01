@@ -2,6 +2,10 @@ from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, func
 import time
 
 from RelayX.database.db import Base, engine
+green = "\033[0;32m"
+cyan = "\033[0;36m"
+reset = "\033[0m"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -31,3 +35,4 @@ class Tokens(Base):
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    print(f"{green}INFO{reset}:     [{cyan}Database{reset}] RelayX Database initialized.")

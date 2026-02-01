@@ -2,6 +2,10 @@ import asyncio, struct, msgpack
 
 from RelayX.core.process_message import process_outer
 
+green = "\033[0;32m"
+cyan = "\033[0;36m"
+reset = "\033[0m"
+
 
 async def handle_incoming(reader, writer):
     global user_onion
@@ -24,6 +28,6 @@ async def handle_incoming(reader, writer):
 
 async def inbound_listener():
     server = await asyncio.start_server(handle_incoming, "127.0.0.1", 5050)
-    print(f"[LISTENER] Active on 127.0.0.1:{5050}")
+    print(f"{green}INFO{reset}:     [{cyan}Inbound Listener{reset}] Listener Active on 127.0.0.1:{5050}")
     async with server:
         await server.serve_forever()

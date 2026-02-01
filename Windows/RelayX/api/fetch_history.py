@@ -6,7 +6,7 @@ from RelayX.utils.config import user_onion
 
 router = APIRouter()
 
-@router.post("/fetch_history")
+@router.get("/fetch_history")
 async def fetch_history(payload: ConnectModel) -> dict:
     recipient_onion = payload.recipient_onion
     recipient_user = await get_user(recipient_onion)

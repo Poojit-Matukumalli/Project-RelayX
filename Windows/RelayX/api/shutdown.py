@@ -6,7 +6,8 @@ from RelayX.core.tor_bootstrap import stop_tor
 router = APIRouter()
 
 @router.post("/shutdown")
-async def shutdown():
+async def shutdown() -> None:
+    """Shuts the Local ASGI server down."""
     try:
         stop_tor()
         await shutdown_backend()

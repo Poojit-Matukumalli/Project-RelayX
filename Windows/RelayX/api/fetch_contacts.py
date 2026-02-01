@@ -9,7 +9,7 @@ from RelayX.utils.config import user_onion
 
 router = APIRouter()
 
-@router.post("/contacts")
+@router.get("/contacts")
 async def get_contacts():
     global user_onion
     try:
@@ -21,7 +21,7 @@ async def get_contacts():
             "msg" : f"[CONTACT FETCH ERROR]\n{str(e)}"     
         }
 
-@router.post("/fetch_blocked")
+@router.get("/fetch_blocked")
 async def get_blocked():
     try:
         blocked_contacts = await fetch_blocked_contacts()

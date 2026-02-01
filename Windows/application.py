@@ -10,9 +10,13 @@ from RelayX.core.inbound import inbound_listener
 from RelayX.core.tor_bootstrap import start_tor, stop_tor
 from RelayX.database.crud import cleanup_tokens
 
+green = "\033[0;32m"
+cyan = "\033[0;36m"
+reset = "\033[0m"
+
 @asynccontextmanager
 async def lifespan(app:FastAPI):
-    print("[RelayX Core] Starting up.")
+    print(f"{green}INFO{reset}:     [{cyan}RelayX Core{reset}] Starting up.")
     tasks = []
     start_tor()
     await init_db()
