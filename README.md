@@ -79,7 +79,7 @@ For Linux:
 ```
 Build a version of it (swap tor and its executables and recompile chunker.so (Project-RelayX/Windows/utilities/chunker.so) and rename Project-RelayX/Windows to Project-RelayX/Linux if you prefer.
 
-It needs a separate build for linux. also make sure to swap paths in Project-RelayX/RelayX/utils/paths.py and use the build from https://github.com/RelayX-Messenger/RelayX-Build.
+It needs a separate build for linux. also make sure to swap paths in Project-RelayX/Windows/RelayX/utils/paths.py and use the build from https://github.com/RelayX-Messenger/RelayX-Build.
 ```
 ---
 
