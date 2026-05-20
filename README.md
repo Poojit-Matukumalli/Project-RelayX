@@ -14,20 +14,19 @@ RelayX Messenger is a *desktop messaging platform* designed for *maximum privacy
 It combines Tor networking with modern cryptography and a lightweight Flutter UI.
 
 **Key highlights:**
-- No central servers — messages are sent through the Tor network and user-maintained RelayX relays.  
+- No central servers. Messages are sent through the Tor network and user-maintained RelayX relays.  
 - Anonymous multi-hop messaging via Tor relays.  
-- X25519-based key exchange with HKDF-derived session keys.  
-- Signed messages with timestamping to prevent replay attacks.  
+- X25519-based key exchange (ECDH) with HKDF-derived session keys.  
 - Asynchronous communication for smooth user experience.  
-- Zero metadata — privacy first, always.
+- Very minimal metadata — privacy first, always.
 
 ---
 
 ## Architecture
 
-- **Frontend:** Flutter desktop app (Windows/Linux).  
-- **Backend:** Python FastAPI server handling user management, encryption, and routing.  
-- **Cryptography:** X25519 Diffie–Hellman handshake, HKDF, Fernet encryption, AES-GCM, digital signatures.  
+- **Frontend:** Flutter desktop app (Windows/Linux) (Unfinished).  
+- **Backend:** Python FastAPI server handling user management, encryption, and routing (Complete).  
+- **Cryptography:** X25519 Diffie–Hellman handshake, HKDF, Fernet encryption (at-rest), AES-GCM. 
 - **Persistence:** SQLite database via SQLAlchemy for user and message storage.
 
 ---
@@ -40,9 +39,6 @@ It combines Tor networking with modern cryptography and a lightweight Flutter UI
 - **Secure Key Management:**  
   Each user has a signature public key; session keys are derived securely.
 
-- **Replay Protection:**  
-  All messages are signed and timestamped.
-
 - **Cross-Platform Desktop:**  
   Flutter UI runs on Windows, Linux, and Android.
 
@@ -53,16 +49,18 @@ It combines Tor networking with modern cryptography and a lightweight Flutter UI
 
 ## Installation
 
-### Pre-built Installer (Recommended)
+### Application
 
-1. Download the latest installer for your OS.  
-2. Run the installer; a desktop shortcut will be created.  
-3. Launch the app — the backend and frontend start automatically.
+1. Visit [RelayX-Build](https://github.com/RelayX-Messenger/RelayX-Build) for the application (Program Files) format. 
+2. Go to the releases and download the latest one (v0.1) and extract it to C:\Program Files\RelayX
+3. Program Files does not allow executables to do malware behavior like extracting to the working dir (Program Files blocks it).
+4. If unsure, Extract to a VM and let virustotal analyze all executables individually.  
+5. Launch the C:\Program Files\RelayX\RelayX.exe and use FastAPI's SwaggerUI for using endpoints.
 
 ---
 
 ### Developer Setup
-The steps below are for Windows users. Check out Linux setup in [Linux Setup](GitHub-docs/linux-Setup.md)
+The steps below are for Windows users.
 ```
 git clone https://github.com/Poojit-Matukumalli/Project-RelayX.git
 ```
@@ -72,29 +70,23 @@ cd Project-RelayX
 ```
 pip install -r requirements.txt
 ```
-```
-flutter build windows (or) linux
-```
-Run backend and frontend separately :
+Run backend :
 For Windows:
 ```
 cd Project-RelayX\Windows\RelayX && cls && python main.py
+```
+For Linux:
+```
+Build a version of it (swap tor and its executables and recompile chunker.so (Project-RelayX/Windows/utilities/chunker.so) and rename Project-RelayX/Windows to Project-RelayX/Linux if you prefer.
+
+It needs a separate build for linux. also make sure to swap paths in Project-RelayX/RelayX/utils/paths.py and use the build from https://github.com/RelayX-Messenger/RelayX-Build.
 ```
 ---
 
 ## Usage :
 
-1. Launch the app.
-
-
-2. Add a new user by entering their username.
-
-
-3. RelayX generates cryptographic IDs internally and provides a QR code.
-
-
-4. Start secure messaging over Tor relays immediately.
-
+1. cURL
+2. SwaggerUI
 
 ---
 
