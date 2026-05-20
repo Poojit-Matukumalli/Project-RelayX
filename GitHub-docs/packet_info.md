@@ -31,7 +31,7 @@
 - 6. FILE_CHUNK
 - 7. FILE_ACK
   
-Depending on what is being sent, these are sealed with AES-GCM + session_key to form the 'sealed_envelope'. Look at [sealing the encelope](../Windows/utilities/network/Client_RelayX.py) line 99,147
+Depending on what is being sent, these are sealed with AES-GCM + session_key to form the 'sealed_envelope'. Look at [sealing the envelope](../Windows/utilities/network/Client_RelayX.py) line 99,147
 # Packet wise breakdown
 
 ### 1. HANDSHAKE_INIT
