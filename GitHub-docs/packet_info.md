@@ -1,6 +1,26 @@
 # RelayX Packet info
-*This file aims to inform the user about packet information and all the metadata which is sent during file/msg/data transfer when using RelayX Messenger.*
+*This file aims to inform the user about packet information and all the metadata which is sent during file/msg/data transfer when using RelayX Messenger*.
 
+*The structure looks like this for an external onlooker looking at a 'msg'*
+```
+{
+    "route": <route>,
+    "sealed_envelope": <AESGCM sealed with the packet structures below>,
+    "from_onion": <sender's onion>
+}
+```
+- "route" consists of [user onion] + [route relays (1)] + [recipient onion]
+- "sealed_content" is AES-GCM encrypted (key - [session_key](../Windows/Keys/public_key_private_key/generate_keys.py), line 61-114)
+
+
+*The structure looks like this for an external onlooker looking at everything except 'msg'*
+```
+{
+    "from_onion": <sender's_onion>,
+    "sealed_envelope": <AESGCM sealed with the packet structures below>
+}
+```
+---
 ## Packets :
 #### These are all the packets used / mentioned.
 - 1. HANDSHAKE_INIT
@@ -10,7 +30,7 @@
 - 5. FILE_TRANSFER_INIT
 - 6. FILE_CHUNK
 - 7. FILE_ACK
-
+Depending on what is being sent, these are sealed with AES-GCM + session_key to form the 'sealed_envelope'. Look at [sealing the encelope](../Windows/utilities/network/Client_RelayX.py) line 99,147
 # Packet wise breakdown
 
 ### 1. HANDSHAKE_INIT
@@ -46,7 +66,6 @@ This is for responding to an incoming handshake.
 This is the message envelope sent to your contacts.
 ```
 {
-    "route": route.copy(),
     "msg_id" : msg_uuid,
     "payload": message,
     "from": user_onion,
@@ -55,7 +74,6 @@ This is the message envelope sent to your contacts.
     "type": "msg"
 }
 ```
-- "route" consists of [user onion] + [route relays (1)] + [recipient onion]
 - msg_id is a randomly generated UUID (uuid4) for deduplication in the db
 - "payload" consists of the encrypted message
 - "to" is the recipient's onion address
