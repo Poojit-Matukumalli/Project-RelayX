@@ -30,6 +30,7 @@
 - 5. FILE_TRANSFER_INIT
 - 6. FILE_CHUNK
 - 7. FILE_ACK
+  
 Depending on what is being sent, these are sealed with AES-GCM + session_key to form the 'sealed_envelope'. Look at [sealing the encelope](../Windows/utilities/network/Client_RelayX.py) line 99,147
 # Packet wise breakdown
 
